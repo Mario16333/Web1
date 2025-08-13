@@ -1190,15 +1190,39 @@
             const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             const BACKEND_URL = isLocal ? 'http://localhost:5000' : 'https://ffcheats-backend.onrender.com';
             
-            // Crear enlace de descarga
-            const link = document.createElement('a');
-            link.href = `${BACKEND_URL}/download/${encodeURIComponent(filename)}`;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            showNotification(`📥 Descargando ${filename}...`, 'info');
             
-            showNotification(`📥 Descargando ${filename}`, 'info');
+            // Usar fetch para descargar con autenticación
+            fetch(`${BACKEND_URL}/download/${encodeURIComponent(filename)}`, {
+                method: 'GET',
+                headers: {
+                    'X-Admin-Token': ADMIN_PASSWORD
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
+                } else {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+            })
+            .then(blob => {
+                // Crear enlace de descarga
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+                
+                showNotification(`✅ ${filename} descargado exitosamente`, 'success');
+            })
+            .catch(error => {
+                console.error('Error downloading file:', error);
+                showNotification(`❌ Error descargando ${filename}: ${error.message}`, 'error');
+            });
         }
         
         function updateFileOnGitHub(filename) {
