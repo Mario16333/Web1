@@ -11,7 +11,14 @@ const fmtBytes=(bytes)=>{ if(!bytes) return ''; const units=['B','KB','MB','GB']
 async function headInfo(url, elId){
   try{
     console.log('📁 Intentando obtener info de archivo:', url);
-    const res = await fetch(url, { method:'HEAD', credentials:'include', headers:{ 'X-Requested-With':'XMLHttpRequest' } });
+    const res = await fetch(url, { 
+      method:'HEAD', 
+      credentials:'include', 
+      headers:{ 
+        'X-Requested-With':'XMLHttpRequest',
+        'Authorization': `Bearer ${localStorage.getItem('sessionToken') || ''}`
+      } 
+    });
     console.log('📁 Respuesta archivo:', res.status, res.statusText);
     if(!res.ok){ 
       document.getElementById(elId).textContent='No disponible'; 
@@ -51,6 +58,7 @@ async function bootstrap(){
     // Verificar si hay sesión local
     const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
     const username = localStorage.getItem('username');
+    const sessionToken = localStorage.getItem('sessionToken');
     
     if (!isLoggedIn || !username) {
       console.log('❌ No hay sesión local, redirigiendo al login');
@@ -59,6 +67,7 @@ async function bootstrap(){
     }
 
     console.log('✅ Sesión local encontrada, cargando panel...');
+    console.log('🔑 Token de sesión:', sessionToken ? 'Presente' : 'Ausente');
     
     // Mostrar información del usuario desde localStorage
     const userNameEl = document.getElementById('userName'); 
@@ -70,7 +79,8 @@ async function bootstrap(){
       const me = await fetch(`${BACKEND_URL}/api/me`, { 
         credentials:'include',
         headers: {
-          'X-Requested-With':'XMLHttpRequest'
+          'X-Requested-With':'XMLHttpRequest',
+          'Authorization': `Bearer ${sessionToken || ''}`
         }
       });
       
@@ -133,6 +143,7 @@ async function bootstrap(){
     localStorage.removeItem('userLoggedIn');
     localStorage.removeItem('username');
     localStorage.removeItem('loginTime');
+    localStorage.removeItem('sessionToken');
     window.location.href = '/login-simple.html';
   }
 }
@@ -147,7 +158,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
           method:'POST', 
           credentials:'include', 
           headers:{
-            'X-Requested-With':'XMLHttpRequest'
+            'X-Requested-With':'XMLHttpRequest',
+            'Authorization': `Bearer ${localStorage.getItem('sessionToken') || ''}`
           }
         }); 
       }catch(err){
@@ -158,6 +170,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       localStorage.removeItem('userLoggedIn');
       localStorage.removeItem('username');
       localStorage.removeItem('loginTime');
+      localStorage.removeItem('sessionToken');
       
       window.location.href = '/login-simple.html';
     });
