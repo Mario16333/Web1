@@ -1,1 +1,2 @@
+/api/* https://ffcheats-backend.onrender.com/api/:splat 200
 /download/* /downloads/:splat 301!
