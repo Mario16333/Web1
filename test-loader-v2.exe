@@ -1,9 +1,0 @@
-# Este es un archivo de prueba para simular Loader.exe versión 2.0
-# Contenido de prueba - versión actualizada
-# Tamaño: 5.2 MB (simulado)
-# Fecha: 13/08/2025, 00:00:00
-
-print("Loader.exe v2.0 - Archivo de prueba actualizado")
-print("Este archivo simula una versión más nueva del Loader.exe")
-print("Tamaño: 5.2 MB")
-print("Fecha: 13/08/2025, 00:00:00")
