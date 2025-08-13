@@ -341,6 +341,41 @@
             background: #dc2626;
         }
         
+        /* Upload Section */
+        .upload-section {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .upload-section h4 {
+            color: #e2e8f0;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(51, 65, 85, 0.5);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        #uploadStatus {
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+        
         /* Configuración */
         .config-section {
             margin: 2rem 0;
@@ -650,30 +685,30 @@
         <!-- Gestión de Archivos -->
         <div class="files-section">
             <h3>📁 Gestión de Archivos</h3>
-            <div class="files-grid">
-                <div class="file-card">
-                    <div class="file-icon">📄</div>
-                    <div class="file-info">
-                        <h4>Loader.exe</h4>
-                        <p>4.6 MB • Descargado 127 veces</p>
-                        <div class="file-actions">
-                            <button class="btn-small" onclick="updateFile('Loader.exe')">Actualizar</button>
-                            <button class="btn-small danger" onclick="deleteFile('Loader.exe')">Eliminar</button>
-                        </div>
+            
+            <!-- Upload de Archivos -->
+            <div class="upload-section">
+                <h4>📤 Subir Nuevo Archivo</h4>
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <input type="file" id="fileInput" accept=".exe,.zip,.rar,.7z,.txt,.pdf" style="display: none;">
+                    <button type="button" class="admin-btn" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-upload"></i> Seleccionar Archivo
+                    </button>
+                    <button type="submit" class="admin-btn" id="uploadBtn" style="display: none;">
+                        <i class="fas fa-cloud-upload-alt"></i> Subir Archivo
+                    </button>
+                </form>
+                <div id="uploadProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
                     </div>
+                    <span id="uploadStatus">Subiendo archivo...</span>
                 </div>
-                
-                <div class="file-card">
-                    <div class="file-icon">📦</div>
-                    <div class="file-info">
-                        <h4>Requerimientos.zip</h4>
-                        <p>8.8 MB • Descargado 89 veces</p>
-                        <div class="file-actions">
-                            <button class="btn-small" onclick="updateFile('Requerimientos.zip')">Actualizar</button>
-                            <button class="btn-small danger" onclick="deleteFile('Requerimientos.zip')">Eliminar</button>
-                        </div>
-                    </div>
-                </div>
+            </div>
+            
+            <!-- Lista de Archivos -->
+            <div class="files-grid" id="filesGrid">
+                <!-- Se llena dinámicamente -->
             </div>
         </div>
 
@@ -781,6 +816,10 @@
             
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('dashboardSection').classList.remove('hidden');
+            
+            // Cargar datos iniciales
+            loadDashboardData();
+            loadFiles();
         }
         
         function logout() {
@@ -825,10 +864,17 @@
         }
         
         function updateStatsWithRealData(data) {
-            document.getElementById('successfulLogins').textContent = data.successful_logins;
-            document.getElementById('failedLogins').textContent = data.failed_logins;
-            document.getElementById('blockedIPs').textContent = data.blocked_ips;
-            document.getElementById('activeUsers').textContent = data.active_users;
+            // Actualizar estadísticas principales
+            document.getElementById('loginsToday').textContent = data.logins_today || 0;
+            document.getElementById('activeCountries').textContent = data.active_countries || 0;
+            document.getElementById('totalDownloads').textContent = data.total_downloads || 0;
+            document.getElementById('avgSessionTime').textContent = data.avg_session_time || '0m';
+            
+            // También actualizar las estadísticas originales
+            document.getElementById('successfulLogins').textContent = data.successful_logins || 0;
+            document.getElementById('failedLogins').textContent = data.failed_logins || 0;
+            document.getElementById('blockedIPs').textContent = data.blocked_ips || 0;
+            document.getElementById('activeUsers').textContent = data.active_users || 0;
         }
         
         function loadActivityLogWithRealData(activities) {
@@ -1014,24 +1060,113 @@
         }
         
         // Funciones para gestión de archivos
-        function updateFile(filename) {
-            if (confirm(`¿Quieres actualizar el archivo ${filename}?`)) {
-                showNotification(`🔄 Actualizando ${filename}...`, 'info');
-                // Aquí iría la lógica para actualizar el archivo
-                setTimeout(() => {
-                    showNotification(`✅ ${filename} actualizado exitosamente`, 'success');
-                }, 2000);
+        function loadFiles() {
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const BACKEND_URL = isLocal ? 'http://localhost:5000' : 'https://ffcheats-backend.onrender.com';
+            
+            fetch(`${BACKEND_URL}/api/admin/files`, {
+                headers: {
+                    'X-Admin-Token': ADMIN_PASSWORD,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.files) {
+                    displayFiles(data.files);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading files:', error);
+                showNotification('❌ Error cargando archivos', 'error');
+            });
+        }
+        
+        function displayFiles(files) {
+            const filesGrid = document.getElementById('filesGrid');
+            filesGrid.innerHTML = '';
+            
+            if (files.length === 0) {
+                filesGrid.innerHTML = '<div class="file-card"><div class="file-info"><h4>No hay archivos</h4><p>Sube tu primer archivo usando el botón de arriba</p></div></div>';
+                return;
+            }
+            
+            files.forEach(file => {
+                const fileCard = document.createElement('div');
+                fileCard.className = 'file-card';
+                
+                const fileIcon = getFileIcon(file.filename);
+                
+                fileCard.innerHTML = `
+                    <div class="file-icon">${fileIcon}</div>
+                    <div class="file-info">
+                        <h4>${file.filename}</h4>
+                        <p>${file.size} • actualizado ${file.modified_date}</p>
+                        <div class="file-actions">
+                            <button class="btn-small" onclick="downloadFile('${file.filename}')">Descargar</button>
+                            <button class="btn-small danger" onclick="deleteFile('${file.filename}')">Eliminar</button>
+                        </div>
+                    </div>
+                `;
+                
+                filesGrid.appendChild(fileCard);
+            });
+        }
+        
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            switch (ext) {
+                case 'exe': return '📄';
+                case 'zip': return '📦';
+                case 'rar': return '📦';
+                case '7z': return '📦';
+                case 'txt': return '📝';
+                case 'pdf': return '📄';
+                default: return '📄';
             }
         }
         
         function deleteFile(filename) {
             if (confirm(`¿Estás seguro de que quieres eliminar ${filename}? Esta acción no se puede deshacer.`)) {
-                showNotification(`🗑️ Eliminando ${filename}...`, 'warning');
-                // Aquí iría la lógica para eliminar el archivo
-                setTimeout(() => {
-                    showNotification(`✅ ${filename} eliminado exitosamente`, 'success');
-                }, 2000);
+                const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const BACKEND_URL = isLocal ? 'http://localhost:5000' : 'https://ffcheats-backend.onrender.com';
+                
+                fetch(`${BACKEND_URL}/api/admin/files/${encodeURIComponent(filename)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-Admin-Token': ADMIN_PASSWORD,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        showNotification(`✅ ${filename} eliminado exitosamente`, 'success');
+                        loadFiles(); // Recargar lista
+                    } else {
+                        showNotification(`❌ Error eliminando ${filename}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting file:', error);
+                    showNotification(`❌ Error eliminando ${filename}`, 'error');
+                });
             }
+        }
+        
+        function downloadFile(filename) {
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const BACKEND_URL = isLocal ? 'http://localhost:5000' : 'https://ffcheats-backend.onrender.com';
+            
+            // Crear enlace de descarga
+            const link = document.createElement('a');
+            link.href = `${BACKEND_URL}/download/${encodeURIComponent(filename)}`;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification(`📥 Descargando ${filename}`, 'info');
         }
         
         // Funciones para configuración
@@ -1059,12 +1194,76 @@
             );
         }
         
-        // Inicializar eventos de configuración
+        // Inicializar eventos de configuración y upload
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('maintenanceMode').addEventListener('change', toggleMaintenanceMode);
             document.getElementById('emailNotifications').addEventListener('change', toggleEmailNotifications);
             document.getElementById('ipBlocking').addEventListener('change', toggleIpBlocking);
+            
+            // Eventos para upload de archivos
+            document.getElementById('fileInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    document.getElementById('uploadBtn').style.display = 'inline-block';
+                    showNotification(`📁 Archivo seleccionado: ${file.name}`, 'info');
+                }
+            });
+            
+            document.getElementById('uploadForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                uploadFile();
+            });
         });
+        
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showNotification('❌ No se seleccionó ningún archivo', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const BACKEND_URL = isLocal ? 'http://localhost:5000' : 'https://ffcheats-backend.onrender.com';
+            
+            // Mostrar progreso
+            document.getElementById('uploadProgress').style.display = 'block';
+            document.getElementById('uploadBtn').style.display = 'none';
+            
+            fetch(`${BACKEND_URL}/api/admin/files/upload`, {
+                method: 'POST',
+                headers: {
+                    'X-Admin-Token': ADMIN_PASSWORD
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    showNotification(`✅ ${data.message}`, 'success');
+                    // Limpiar formulario
+                    fileInput.value = '';
+                    document.getElementById('uploadBtn').style.display = 'none';
+                    document.getElementById('uploadProgress').style.display = 'none';
+                    // Recargar lista de archivos
+                    loadFiles();
+                } else {
+                    showNotification(`❌ Error: ${data.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error uploading file:', error);
+                showNotification('❌ Error subiendo archivo', 'error');
+            })
+            .finally(() => {
+                document.getElementById('uploadProgress').style.display = 'none';
+                document.getElementById('uploadBtn').style.display = 'none';
+            });
+        }
         
         // Actualizar datos cada 30 segundos
         setInterval(() => {

@@ -417,11 +417,28 @@ def admin_stats():
     blocked_ips = len(set([log.get('ip') for log in activity_logs if log.get('status') == 'blocked']))
     active_users = len(set([log.get('username') for log in activity_logs if log.get('status') == 'success' and (datetime.now() - log.get('timestamp', datetime.now())).seconds < 3600]))
     
+    # Estadísticas de hoy
+    today = datetime.now().date()
+    logins_today = len([log for log in activity_logs if log.get('status') == 'success' and log.get('timestamp').date() == today])
+    
+    # Contador de descargas (simulado por ahora, se puede implementar real)
+    total_downloads = 127  # Esto se puede hacer real
+    
+    # Tiempo promedio de sesión (simulado)
+    avg_session_time = "15m"
+    
+    # Países activos (simulado, se puede implementar con geolocalización)
+    active_countries = 3
+    
     return jsonify({
         'successful_logins': successful_logins,
         'failed_logins': failed_logins,
         'blocked_ips': blocked_ips,
         'active_users': active_users,
+        'logins_today': logins_today,
+        'total_downloads': total_downloads,
+        'avg_session_time': avg_session_time,
+        'active_countries': active_countries,
         'recent_activity': activity_logs[-10:]  # Últimos 10 logs
     })
 
@@ -444,6 +461,140 @@ def clear_admin_logs():
     global activity_logs
     activity_logs.clear()
     return jsonify({'message': 'Logs cleared successfully'})
+
+@app.route('/api/admin/files', methods=['GET'])
+def get_files_info():
+    """Endpoint para obtener información de archivos"""
+    admin_token = request.headers.get('X-Admin-Token')
+    if admin_token != 'Mario123':
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    files_info = []
+    try:
+        for filename in os.listdir(DOWNLOAD_DIR):
+            file_path = os.path.join(DOWNLOAD_DIR, filename)
+            if os.path.isfile(file_path):
+                stat_info = os.stat(file_path)
+                file_size = stat_info.st_size
+                
+                # Formatear tamaño
+                if file_size < 1024:
+                    size_str = f"{file_size} B"
+                elif file_size < 1024 * 1024:
+                    size_str = f"{file_size / 1024:.1f} KB"
+                else:
+                    size_str = f"{file_size / (1024 * 1024):.1f} MB"
+                
+                # Obtener fecha de modificación
+                mod_time = datetime.fromtimestamp(stat_info.st_mtime)
+                formatted_date = mod_time.strftime('%d/%m/%Y, %H:%M:%S')
+                
+                files_info.append({
+                    'filename': filename,
+                    'size': size_str,
+                    'size_bytes': file_size,
+                    'modified_date': formatted_date,
+                    'downloads': 0  # Esto se puede implementar real
+                })
+    except Exception as e:
+        logger.error(f"Error getting files info: {e}")
+        return jsonify({'error': 'Error getting files info'}), 500
+    
+    return jsonify({'files': files_info})
+
+@app.route('/api/admin/files/upload', methods=['POST'])
+def upload_file():
+    """Endpoint para subir archivos"""
+    admin_token = request.headers.get('X-Admin-Token')
+    if admin_token != 'Mario123':
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        # Validar extensión
+        allowed_extensions = {'.exe', '.zip', '.rar', '.7z', '.txt', '.pdf'}
+        file_ext = os.path.splitext(file.filename)[1].lower()
+        if file_ext not in allowed_extensions:
+            return jsonify({'error': 'File type not allowed'}), 400
+        
+        # Guardar archivo
+        filename = file.filename
+        file_path = os.path.join(DOWNLOAD_DIR, filename)
+        file.save(file_path)
+        
+        # Actualizar metadatos
+        update_file_metadata()
+        
+        logger.info(f"File uploaded: {filename}")
+        return jsonify({'message': f'File {filename} uploaded successfully'})
+        
+    except Exception as e:
+        logger.error(f"Error uploading file: {e}")
+        return jsonify({'error': 'Error uploading file'}), 500
+
+@app.route('/api/admin/files/<filename>', methods=['DELETE'])
+def delete_file(filename):
+    """Endpoint para eliminar archivos"""
+    admin_token = request.headers.get('X-Admin-Token')
+    if admin_token != 'Mario123':
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        file_path = os.path.join(DOWNLOAD_DIR, filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            logger.info(f"File deleted: {filename}")
+            return jsonify({'message': f'File {filename} deleted successfully'})
+        else:
+            return jsonify({'error': 'File not found'}), 404
+            
+    except Exception as e:
+        logger.error(f"Error deleting file: {e}")
+        return jsonify({'error': 'Error deleting file'}), 500
+
+def update_file_metadata():
+    """Función para actualizar metadatos de archivos"""
+    metadata_file = os.path.join(os.getcwd(), 'file_metadata.json')
+    
+    # Cargar metadatos existentes
+    if os.path.exists(metadata_file):
+        with open(metadata_file, 'r', encoding='utf-8') as f:
+            metadata = json.load(f)
+    else:
+        metadata = {}
+    
+    # Verificar archivos en downloads/
+    if os.path.exists(DOWNLOAD_DIR):
+        for filename in os.listdir(DOWNLOAD_DIR):
+            file_path = os.path.join(DOWNLOAD_DIR, filename)
+            if os.path.isfile(file_path):
+                stat_info = os.stat(file_path)
+                file_size = stat_info.st_size
+                mod_time = datetime.fromtimestamp(stat_info.st_mtime)
+                
+                # Convertir a hora local (UTC-5 para Colombia)
+                utc_time = mod_time.replace(tzinfo=timezone.utc)
+                local_time = utc_time.astimezone(timezone(timedelta(hours=-5)))
+                formatted_date = local_time.strftime('%d/%m/%Y, %H:%M:%S')
+                
+                # Si el archivo no existe en metadatos o ha cambiado
+                if filename not in metadata or metadata[filename].get('size') != file_size:
+                    metadata[filename] = {
+                        "original_modified": local_time.isoformat(),
+                        "original_modified_formatted": formatted_date,
+                        "last_upload": datetime.now().isoformat(),
+                        "size": file_size
+                    }
+    
+    # Guardar metadatos actualizados
+    with open(metadata_file, 'w', encoding='utf-8') as f:
+        json.dump(metadata, f, indent=2, ensure_ascii=False)
 
 @app.get('/<path:asset>')
 def assets(asset):
