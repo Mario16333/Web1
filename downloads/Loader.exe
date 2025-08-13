@@ -1,0 +1,15 @@
+# FFCheats Loader.exe
+# Versión: 1.0
+# Tamaño: 4.6 MB
+# Fecha: 13/08/2025
+
+# Este es el archivo Loader.exe para FFCheats
+# Contiene el ejecutable principal del cheat
+
+print("FFCheats Loader v1.0")
+print("Iniciando sistema...")
+print("Cargando módulos...")
+print("Sistema listo para usar")
+
+# Simulación de archivo ejecutable
+# En un archivo real, aquí estaría el código compilado
