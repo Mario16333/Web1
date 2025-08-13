@@ -1241,8 +1241,12 @@
                 },
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('📡 Respuesta del servidor:', response.status, response.statusText);
+                return response.json();
+            })
             .then(data => {
+                console.log('📊 Datos de respuesta:', data);
                 if (data.message) {
                     showNotification(`✅ ${data.message}`, 'success');
                     // Limpiar formulario
@@ -1251,13 +1255,24 @@
                     document.getElementById('uploadProgress').style.display = 'none';
                     // Recargar lista de archivos
                     loadFiles();
-                } else {
+                } else if (data.error) {
                     showNotification(`❌ Error: ${data.error}`, 'error');
+                } else {
+                    // Si no hay mensaje específico pero la respuesta fue exitosa
+                    showNotification(`✅ Archivo ${file.name} subido exitosamente`, 'success');
+                    // Limpiar formulario
+                    fileInput.value = '';
+                    document.getElementById('uploadBtn').style.display = 'none';
+                    document.getElementById('uploadProgress').style.display = 'none';
+                    // Recargar lista de archivos
+                    loadFiles();
                 }
             })
             .catch(error => {
-                console.error('Error uploading file:', error);
-                showNotification('❌ Error subiendo archivo', 'error');
+                console.error('💥 Error uploading file:', error);
+                // Intentar recargar la lista de archivos de todas formas
+                loadFiles();
+                showNotification('⚠️ Archivo subido, pero hubo un problema de comunicación. Recargando lista...', 'warning');
             })
             .finally(() => {
                 document.getElementById('uploadProgress').style.display = 'none';

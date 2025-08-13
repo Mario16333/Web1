@@ -1,0 +1,12 @@
+Este es un archivo de prueba para verificar el sistema de upload del dashboard.
+
+Fecha de creación: 13/08/2025
+Propósito: Testear la funcionalidad de upload de archivos
+
+Si puedes ver este archivo en el dashboard, significa que:
+✅ El upload funciona correctamente
+✅ Los archivos se guardan en el servidor
+✅ La lista se actualiza automáticamente
+✅ El sistema está funcionando perfectamente
+
+¡Dashboard de FFCheats funcionando al 100%! 🚀
