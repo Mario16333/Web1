@@ -1,4 +1,7 @@
+const BACKEND_URL = 'https://ffcheats-backend.onrender.com';
+
 const fmtBytes=(bytes)=>{ if(!bytes) return ''; const units=['B','KB','MB','GB']; let i=0; let b=Number(bytes); while(b>=1024 && i<units.length-1){ b/=1024; i++; } return b.toFixed(b<10?1:0)+' '+units[i]; };
+
 async function headInfo(url, elId){
   try{
     const res = await fetch(url, { method:'HEAD', credentials:'include', headers:{ 'X-Requested-With':'XMLHttpRequest' } });
@@ -9,6 +12,7 @@ async function headInfo(url, elId){
     document.getElementById(elId).textContent = (fmtBytes(size) || '') + (date ? (' · actualizado ' + date) : '');
   }catch{ document.getElementById(elId).textContent='No disponible'; }
 }
+
 function renderTimer(seconds){
   let timeLeft = Math.max(0, seconds|0);
   const total = timeLeft;
@@ -24,14 +28,38 @@ function renderTimer(seconds){
   tick();
   setInterval(tick, 1000);
 }
+
 async function bootstrap(){
   try{
-    const me = await fetch('/api/me', { credentials:'include' });
-    if(me.status === 401){ window.location.href = '/login-simple.html'; return; }
+    // Verificar si hay sesión local
+    const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+    if (!isLoggedIn) {
+      window.location.href = '/login-simple.html';
+      return;
+    }
+
+    const me = await fetch(`${BACKEND_URL}/api/me`, { 
+      credentials:'include',
+      headers: {
+        'X-Requested-With':'XMLHttpRequest',
+        'Authorization': `Bearer ${localStorage.getItem('sessionToken') || ''}`
+      }
+    });
+    
+    if(me.status === 401){ 
+      localStorage.removeItem('userLoggedIn');
+      localStorage.removeItem('sessionToken');
+      window.location.href = '/login-simple.html'; 
+      return; 
+    }
+    
     const data = await me.json();
     const user = data.user || {};
-    const userNameEl = document.getElementById('userName'); if (userNameEl) userNameEl.textContent = user.username || 'Usuario';
-    let timeLeft = 0; let expiry = null;
+    const userNameEl = document.getElementById('userName'); 
+    if (userNameEl) userNameEl.textContent = user.username || 'Usuario';
+    
+    let timeLeft = 0; 
+    let expiry = null;
     if (Array.isArray(user.subscriptions)) {
       for (const sub of user.subscriptions){
         if (!timeLeft && typeof sub.timeleft === 'number') timeLeft = sub.timeleft;
@@ -39,14 +67,24 @@ async function bootstrap(){
       }
     }
     if (!timeLeft && expiry){
-      if (typeof expiry === 'string' && /^\d+$/.test(expiry)) { timeLeft = Math.max(0, parseInt(expiry)*1000 - Date.now()); timeLeft = Math.floor(timeLeft/1000); }
-      else { const d=new Date(expiry); if(!isNaN(d)) { timeLeft = Math.max(0, Math.floor((d.getTime()-Date.now())/1000)); } }
+      if (typeof expiry === 'string' && /^\d+$/.test(expiry)) { 
+        timeLeft = Math.max(0, parseInt(expiry)*1000 - Date.now()); 
+        timeLeft = Math.floor(timeLeft/1000); 
+      }
+      else { 
+        const d=new Date(expiry); 
+        if(!isNaN(d)) { 
+          timeLeft = Math.max(0, Math.floor((d.getTime()-Date.now())/1000)); 
+        } 
+      }
     }
     renderTimer(timeLeft);
-    headInfo('/downloads/Loader.exe','exeInfo');
-    headInfo('/downloads/Requerimientos.zip','zipInfo');
+    headInfo(`${BACKEND_URL}/downloads/Loader.exe`,'exeInfo');
+    headInfo(`${BACKEND_URL}/downloads/Requerimientos.zip`,'zipInfo');
   } catch(err){
-    console.error(err);
+    console.error('Error cargando datos:', err);
+    localStorage.removeItem('userLoggedIn');
+    localStorage.removeItem('sessionToken');
     window.location.href = '/login-simple.html';
   }
 }
@@ -55,7 +93,25 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn){
     logoutBtn.addEventListener('click', async ()=>{
-      try{ await fetch('/api/logout', { method:'POST', credentials:'include', headers:{ 'X-Requested-With':'XMLHttpRequest' } }); }catch{}
+      try{ 
+        await fetch(`${BACKEND_URL}/api/logout`, { 
+          method:'POST', 
+          credentials:'include', 
+          headers:{
+            'X-Requested-With':'XMLHttpRequest',
+            'Authorization': `Bearer ${localStorage.getItem('sessionToken') || ''}`
+          }
+        }); 
+      }catch(err){
+        console.error('Error en logout:', err);
+      }
+      
+      // Limpiar localStorage
+      localStorage.removeItem('userLoggedIn');
+      localStorage.removeItem('sessionToken');
+      localStorage.removeItem('username');
+      localStorage.removeItem('loginTime');
+      
       window.location.href = '/login-simple.html';
     });
   }
