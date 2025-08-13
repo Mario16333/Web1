@@ -11,26 +11,38 @@ const fmtBytes=(bytes)=>{ if(!bytes) return ''; const units=['B','KB','MB','GB']
 async function headInfo(url, elId){
   try{
     console.log('📁 Intentando obtener info de archivo:', url);
-    const res = await fetch(url, { 
-      method:'HEAD', 
+    
+    // Extraer el nombre del archivo de la URL
+    const filename = url.split('/').pop();
+    console.log('📁 Nombre del archivo:', filename);
+    
+    // Usar el nuevo endpoint para obtener información detallada
+    const fileInfoUrl = `${BACKEND_URL}/api/file-info/${filename}`;
+    console.log('📁 URL de info del archivo:', fileInfoUrl);
+    
+    const res = await fetch(fileInfoUrl, { 
       credentials:'include', 
       headers:{ 
         'X-Requested-With':'XMLHttpRequest',
         'Authorization': `Bearer ${localStorage.getItem('sessionToken') || ''}`
       } 
     });
+    
     console.log('📁 Respuesta archivo:', res.status, res.statusText);
+    
     if(!res.ok){ 
       document.getElementById(elId).textContent='No disponible'; 
       console.log('📁 Archivo no disponible:', res.status);
       return; 
     }
-    const size = res.headers.get('content-length');
-    const lm = res.headers.get('last-modified');
-    const date = lm ? new Date(lm).toLocaleString('es-ES') : '';
-    const info = (fmtBytes(size) || '') + (date ? (' · actualizado ' + date) : '');
+    
+    const fileData = await res.json();
+    console.log('📁 Datos del archivo:', fileData);
+    
+    const info = `${fileData.size} · actualizado ${fileData.modified_date}`;
     document.getElementById(elId).textContent = info;
     console.log('📁 Info archivo obtenida:', info);
+    
   }catch(err){
     console.error('📁 Error obteniendo archivo:', err);
     document.getElementById(elId).textContent='No disponible';

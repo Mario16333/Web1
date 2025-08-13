@@ -281,6 +281,73 @@ def protected_download(filename):
     logger.info("descarga usuario=%s archivo=%s", payload.get('sub'), actual_name)
     return send_from_directory(DOWNLOAD_DIR, actual_name, as_attachment=True)
 
+@app.get('/api/file-info/<path:filename>')
+@limiter.limit("60/hour")
+def get_file_info(filename):
+    """Endpoint para obtener información del archivo (tamaño, fecha de modificación)"""
+    # Intentar obtener token de cookies primero
+    payload = get_jwt()
+    
+    # Si no hay token en cookies, intentar del header Authorization
+    if not payload:
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+            try:
+                payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+            except jwt.PyJWTError:
+                pass
+    
+    if not payload:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    # Denegar path traversal
+    safe_name = os.path.basename(filename)
+
+    # Búsqueda case-insensitive del archivo
+    try:
+        files = os.listdir(DOWNLOAD_DIR)
+    except FileNotFoundError:
+        return jsonify({'error': 'Directory not found'}), 404
+    
+    lookup = {f.lower(): f for f in files}
+    actual_name = lookup.get(safe_name.lower())
+    if not actual_name:
+        return jsonify({'error': 'File not found'}), 404
+
+    file_path = os.path.join(DOWNLOAD_DIR, actual_name)
+    if not os.path.isfile(file_path):
+        return jsonify({'error': 'File not found'}), 404
+
+    try:
+        # Obtener información del archivo
+        stat_info = os.stat(file_path)
+        file_size = stat_info.st_size
+        mod_time = datetime.fromtimestamp(stat_info.st_mtime)
+        
+        # Formatear fecha
+        formatted_date = mod_time.strftime('%d/%m/%Y, %H:%M:%S')
+        
+        # Formatear tamaño
+        if file_size < 1024:
+            size_str = f"{file_size} B"
+        elif file_size < 1024 * 1024:
+            size_str = f"{file_size / 1024:.1f} KB"
+        else:
+            size_str = f"{file_size / (1024 * 1024):.1f} MB"
+        
+        return jsonify({
+            'filename': actual_name,
+            'size': size_str,
+            'size_bytes': file_size,
+            'modified_date': formatted_date,
+            'modified_timestamp': stat_info.st_mtime
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting file info for {filename}: {e}")
+        return jsonify({'error': 'Error getting file info'}), 500
+
 
 @app.get('/')
 def root():
