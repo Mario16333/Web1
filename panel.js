@@ -135,8 +135,8 @@ async function bootstrap(){
     
     // Intentar cargar información de archivos
     console.log('📁 Cargando información de archivos...');
-    headInfo(`${BACKEND_URL}/downloads/Loader.exe`,'exeInfo');
-    headInfo(`${BACKEND_URL}/downloads/Requerimientos.zip`,'zipInfo');
+    headInfo(`${BACKEND_URL}/download/Loader.exe`,'exeInfo');
+    headInfo(`${BACKEND_URL}/download/Requerimientos.zip`,'zipInfo');
     
   } catch(err){
     console.error('💥 Error cargando datos:', err);
