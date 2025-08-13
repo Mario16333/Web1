@@ -160,7 +160,20 @@ def api_login():
             return jsonify({'ok': False, 'error': login_res.get('message', 'login failed')}), 401
 
         subscriptions = login_res.get('info', {}).get('subscriptions', [])
-        resp = make_response({'ok': True, 'user': {'username': username, 'subscriptions': subscriptions}})
+        
+        # Crear token JWT
+        exp = datetime.now(timezone.utc) + timedelta(hours=6)
+        token = jwt.encode({
+            'sub': username,
+            'roles': subscriptions,
+            'exp': exp
+        }, JWT_SECRET, algorithm='HS256')
+        
+        resp = make_response({
+            'ok': True, 
+            'user': {'username': username, 'subscriptions': subscriptions},
+            'token': token
+        })
         set_jwt(resp, username, subscriptions)
         logger.info("login ok usuario=%s", username)
         
@@ -191,7 +204,19 @@ def api_logout():
 @app.get('/api/me')
 @limiter.limit("60/hour")
 def api_me():
+    # Intentar obtener token de cookies primero
     payload = get_jwt()
+    
+    # Si no hay token en cookies, intentar del header Authorization
+    if not payload:
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+            try:
+                payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+            except jwt.PyJWTError:
+                pass
+    
     if not payload:
         return jsonify({'ok': False}), 401
     return jsonify({'ok': True, 'user': {'username': payload['sub'], 'subscriptions': payload['roles']}})
@@ -200,7 +225,19 @@ def api_me():
 @app.get('/download/<path:filename>')
 @limiter.limit("20/hour")
 def protected_download(filename):
+    # Intentar obtener token de cookies primero
     payload = get_jwt()
+    
+    # Si no hay token en cookies, intentar del header Authorization
+    if not payload:
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+            try:
+                payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+            except jwt.PyJWTError:
+                pass
+    
     if not payload:
         abort(401)
 
