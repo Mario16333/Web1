@@ -26,10 +26,6 @@ SECRET = os.getenv("KEYAUTH_SECRET", "cf7782a1cf26f900721a8e6f6c128702f01637dede
 VERSION = os.getenv("KEYAUTH_VERSION", "1.0")
 JWT_SECRET = os.getenv("JWT_SECRET", os.urandom(32))
 DOWNLOAD_DIR = os.getenv("DOWNLOAD_DIR", os.path.join(os.getcwd(), "downloads"))
-# Crear directorio downloads si no existe
-if not os.path.exists(DOWNLOAD_DIR):
-    os.makedirs(DOWNLOAD_DIR)
-    logger.info(f"Created downloads directory: {DOWNLOAD_DIR}")
 
 COOKIE_NAME = "session"
 ENVIRONMENT = os.getenv("ENV", "development")
@@ -38,6 +34,11 @@ IS_PROD = ENVIRONMENT.lower() == "production"
 # Logging básico
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
 logger = logging.getLogger(__name__)
+
+# Crear directorio downloads si no existe
+if not os.path.exists(DOWNLOAD_DIR):
+    os.makedirs(DOWNLOAD_DIR)
+    logger.info(f"Created downloads directory: {DOWNLOAD_DIR}")
 
 app = Flask(__name__)
 
