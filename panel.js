@@ -37,57 +37,36 @@ async function bootstrap(){
   try{
     // Verificar si hay sesión local
     const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
-    if (!isLoggedIn) {
+    const username = localStorage.getItem('username');
+    
+    if (!isLoggedIn || !username) {
+      console.log('No hay sesión local, redirigiendo al login');
       window.location.href = '/login-simple.html';
       return;
     }
 
-    const me = await fetch(`${BACKEND_URL}/api/me`, { 
-      credentials:'include',
-      headers: {
-        'X-Requested-With':'XMLHttpRequest'
-      }
-    });
+    console.log('Sesión local encontrada, cargando panel...');
     
-    if(me.status === 401){ 
-      localStorage.removeItem('userLoggedIn');
-      localStorage.removeItem('sessionToken');
-      window.location.href = '/login-simple.html'; 
-      return; 
-    }
-    
-    const data = await me.json();
-    const user = data.user || {};
+    // Mostrar información del usuario desde localStorage
     const userNameEl = document.getElementById('userName'); 
-    if (userNameEl) userNameEl.textContent = user.username || 'Usuario';
+    if (userNameEl) userNameEl.textContent = username;
     
-    let timeLeft = 0; 
-    let expiry = null;
-    if (Array.isArray(user.subscriptions)) {
-      for (const sub of user.subscriptions){
-        if (!timeLeft && typeof sub.timeleft === 'number') timeLeft = sub.timeleft;
-        if (!expiry && sub.expiry) expiry = sub.expiry;
-      }
+    // Simular tiempo infinito para desarrollo
+    renderTimer(999999999); // Tiempo muy alto para simular infinito
+    
+    // Intentar cargar información de archivos (opcional)
+    try {
+      headInfo(`${BACKEND_URL}/downloads/Loader.exe`,'exeInfo');
+      headInfo(`${BACKEND_URL}/downloads/Requerimientos.zip`,'zipInfo');
+    } catch (err) {
+      console.log('No se pudieron cargar los archivos:', err);
     }
-    if (!timeLeft && expiry){
-      if (typeof expiry === 'string' && /^\d+$/.test(expiry)) { 
-        timeLeft = Math.max(0, parseInt(expiry)*1000 - Date.now()); 
-        timeLeft = Math.floor(timeLeft/1000); 
-      }
-      else { 
-        const d=new Date(expiry); 
-        if(!isNaN(d)) { 
-          timeLeft = Math.max(0, Math.floor((d.getTime()-Date.now())/1000)); 
-        } 
-      }
-    }
-    renderTimer(timeLeft);
-    headInfo(`${BACKEND_URL}/downloads/Loader.exe`,'exeInfo');
-    headInfo(`${BACKEND_URL}/downloads/Requerimientos.zip`,'zipInfo');
+    
   } catch(err){
     console.error('Error cargando datos:', err);
     localStorage.removeItem('userLoggedIn');
-    localStorage.removeItem('sessionToken');
+    localStorage.removeItem('username');
+    localStorage.removeItem('loginTime');
     window.location.href = '/login-simple.html';
   }
 }
@@ -97,6 +76,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if (logoutBtn){
     logoutBtn.addEventListener('click', async ()=>{
       try{ 
+        // Intentar logout en el backend (opcional)
         await fetch(`${BACKEND_URL}/api/logout`, { 
           method:'POST', 
           credentials:'include', 
@@ -105,12 +85,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
           }
         }); 
       }catch(err){
-        console.error('Error en logout:', err);
+        console.error('Error en logout del backend:', err);
       }
       
       // Limpiar localStorage
       localStorage.removeItem('userLoggedIn');
-      localStorage.removeItem('sessionToken');
       localStorage.removeItem('username');
       localStorage.removeItem('loginTime');
       
