@@ -237,11 +237,15 @@ security_logs = []
 blocked_ips = set()
 login_attempts = {}
 
+@app.get('/admin')
+def admin_access():
+    return send_from_directory('.', 'admin.html')
+
 @app.get('/admin-dashboard')
 def admin_dashboard():
     # Verificar token de admin (en producción usar JWT)
     admin_token = request.args.get('token')
-    if admin_token != 'FFCheats2024!':
+    if admin_token != 'Mario123':
         abort(403)
     return send_from_directory('.', 'admin-dashboard.html')
 
@@ -249,7 +253,7 @@ def admin_dashboard():
 def admin_stats():
     # Verificar token de admin
     admin_token = request.headers.get('X-Admin-Token')
-    if admin_token != 'FFCheats2024!':
+    if admin_token != 'Mario123':
         return jsonify({'error': 'Unauthorized'}), 401
     
     # Calcular estadísticas

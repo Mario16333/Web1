@@ -275,7 +275,7 @@
 
     <script>
         // Contraseña de administrador (en producción usar JWT)
-        const ADMIN_PASSWORD = 'FFCheats2024!';
+        const ADMIN_PASSWORD = 'Mario123';
         
         // Verificar si ya está logueado
         if (localStorage.getItem('adminLoggedIn') === 'true') {
@@ -289,6 +289,12 @@
             
             if (password === ADMIN_PASSWORD) {
                 localStorage.setItem('adminLoggedIn', 'true');
+                // Mantener el token en la URL
+                const currentUrl = new URL(window.location);
+                if (!currentUrl.searchParams.has('token')) {
+                    currentUrl.searchParams.set('token', ADMIN_PASSWORD);
+                    window.history.replaceState({}, '', currentUrl);
+                }
                 showDashboard();
                 loadDashboardData();
             } else {
@@ -298,6 +304,15 @@
         });
         
         function showDashboard() {
+            // Verificar que tenemos el token en la URL
+            const currentUrl = new URL(window.location);
+            if (!currentUrl.searchParams.has('token') || currentUrl.searchParams.get('token') !== ADMIN_PASSWORD) {
+                // Redirigir con el token correcto
+                currentUrl.searchParams.set('token', ADMIN_PASSWORD);
+                window.location.href = currentUrl.toString();
+                return;
+            }
+            
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('dashboardSection').classList.remove('hidden');
         }
