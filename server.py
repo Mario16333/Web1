@@ -116,6 +116,22 @@ def api_login():
         password = body.get('password') or ''
         if not username or not password:
             return jsonify({'ok': False, 'error': 'Missing credentials'}), 400
+        
+        # Verificar IP bloqueada
+        client_ip = request.remote_addr
+        if client_ip in blocked_ips:
+            logger.warning(f"Intento de login desde IP bloqueada: {client_ip}")
+            return jsonify({'ok': False, 'error': 'IP bloqueada'}), 403
+        
+        # Registrar intento de login
+        login_log = {
+            'timestamp': datetime.now(timezone.utc).isoformat(),
+            'username': username,
+            'ip': client_ip,
+            'user_agent': request.headers.get('User-Agent', ''),
+            'status': 'pending'
+        }
+        security_logs.append(login_log)
 
         # init
         init_res = keyauth_request('init', **{'user': username, 'pass': password})
@@ -128,12 +144,22 @@ def api_login():
         login_res = keyauth_request('login', **{'sessionid': sessionid, 'username': username, 'pass': password})
         if not login_res.get('success'):
             logger.info("login fallo para usuario=%s: %s", username, login_res.get('message'))
+            # Actualizar log con fallo
+            if security_logs:
+                security_logs[-1]['status'] = 'failed'
+                security_logs[-1]['error'] = login_res.get('message', 'login failed')
             return jsonify({'ok': False, 'error': login_res.get('message', 'login failed')}), 401
 
         subscriptions = login_res.get('info', {}).get('subscriptions', [])
         resp = make_response({'ok': True, 'user': {'username': username, 'subscriptions': subscriptions}})
         set_jwt(resp, username, subscriptions)
         logger.info("login ok usuario=%s", username)
+        
+        # Actualizar log con éxito
+        if security_logs:
+            security_logs[-1]['status'] = 'success'
+            security_logs[-1]['subscriptions'] = subscriptions
+        
         return resp
     except requests.RequestException:
         logger.exception("KeyAuth unreachable")
@@ -205,6 +231,38 @@ def panel():
     resp.headers['Cache-Control'] = 'no-store'
     return resp
 
+
+# Variables para logging de seguridad
+security_logs = []
+blocked_ips = set()
+login_attempts = {}
+
+@app.get('/admin-dashboard')
+def admin_dashboard():
+    # Verificar token de admin (en producción usar JWT)
+    admin_token = request.args.get('token')
+    if admin_token != 'FFCheats2024!':
+        abort(403)
+    return send_from_directory('.', 'admin-dashboard.html')
+
+@app.get('/api/admin/stats')
+def admin_stats():
+    # Verificar token de admin
+    admin_token = request.headers.get('X-Admin-Token')
+    if admin_token != 'FFCheats2024!':
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    # Calcular estadísticas
+    successful_logins = len([log for log in security_logs if log.get('status') == 'success'])
+    failed_logins = len([log for log in security_logs if log.get('status') == 'failed'])
+    
+    return jsonify({
+        'successful_logins': successful_logins,
+        'failed_logins': failed_logins,
+        'blocked_ips': len(blocked_ips),
+        'active_users': len(set(log.get('username') for log in security_logs[-50:] if log.get('status') == 'success')),
+        'recent_activity': security_logs[-20:]  # Últimos 20 logs
+    })
 
 @app.get('/<path:asset>')
 def assets(asset):

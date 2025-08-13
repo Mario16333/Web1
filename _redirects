@@ -1,2 +1,3 @@
 /api/* https://ffcheats-backend.onrender.com/api/:splat 200
+/admin-dashboard https://ffcheats-backend.onrender.com/admin-dashboard 200
 /download/* /downloads/:splat 301!

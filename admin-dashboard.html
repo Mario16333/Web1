@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - FFCheats</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .admin-container {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .admin-header {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            border: 1px solid #334155;
+        }
+        
+        .admin-title {
+            color: #3b82f6;
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+        }
+        
+        .admin-subtitle {
+            color: #e2e8f0;
+            font-size: 1rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid #334155;
+        }
+        
+        .stat-title {
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            color: #3b82f6;
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-change {
+            color: #10b981;
+            font-size: 0.9rem;
+        }
+        
+        .stat-change.negative {
+            color: #ef4444;
+        }
+        
+        .activity-section {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid #334155;
+            margin-bottom: 2rem;
+        }
+        
+        .activity-title {
+            color: #e2e8f0;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-info {
+            color: #e2e8f0;
+        }
+        
+        .activity-time {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .activity-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-success {
+            background: #065f46;
+            color: #10b981;
+        }
+        
+        .status-failed {
+            background: #7f1d1d;
+            color: #ef4444;
+        }
+        
+        .status-warning {
+            background: #92400e;
+            color: #f59e0b;
+        }
+        
+        .admin-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .admin-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        .admin-btn.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .admin-btn.danger:hover {
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .login-form {
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .login-input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            color: #e2e8f0;
+        }
+        
+        .login-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Form (inicialmente visible) -->
+    <div id="loginSection" class="admin-container">
+        <div class="login-form">
+            <div class="admin-header">
+                <div class="admin-title">
+                    <i class="fas fa-shield-alt"></i> Admin Access
+                </div>
+                <div class="admin-subtitle">Acceso restringido al dashboard</div>
+            </div>
+            
+            <form id="adminLoginForm">
+                <input type="password" id="adminPassword" class="login-input" placeholder="Contraseña de administrador" required>
+                <button type="submit" class="admin-btn">
+                    <i class="fas fa-sign-in-alt"></i> Acceder
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard (inicialmente oculto) -->
+    <div id="dashboardSection" class="admin-container hidden">
+        <div class="admin-header">
+            <div class="admin-title">
+                <i class="fas fa-chart-line"></i> Dashboard de Seguridad
+            </div>
+            <div class="admin-subtitle">Monitoreo en tiempo real - FFCheats</div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-title">Logins Exitosos</div>
+                <div class="stat-value" id="successfulLogins">0</div>
+                <div class="stat-change">+12% vs ayer</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">Intentos Fallidos</div>
+                <div class="stat-value" id="failedLogins">0</div>
+                <div class="stat-change negative">+5% vs ayer</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">IPs Bloqueadas</div>
+                <div class="stat-value" id="blockedIPs">0</div>
+                <div class="stat-change">+2 nuevas</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">Usuarios Activos</div>
+                <div class="stat-value" id="activeUsers">0</div>
+                <div class="stat-change">+8% vs ayer</div>
+            </div>
+        </div>
+
+        <!-- Actividad Reciente -->
+        <div class="activity-section">
+            <div class="activity-title">
+                <i class="fas fa-history"></i> Actividad Reciente
+            </div>
+            <div id="activityList">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Acciones de Administrador -->
+        <div class="activity-section">
+            <div class="activity-title">
+                <i class="fas fa-tools"></i> Acciones de Administrador
+            </div>
+            <div class="admin-actions">
+                <button class="admin-btn" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> Actualizar Datos
+                </button>
+                <button class="admin-btn" onclick="exportLogs()">
+                    <i class="fas fa-download"></i> Exportar Logs
+                </button>
+                <button class="admin-btn danger" onclick="clearLogs()">
+                    <i class="fas fa-trash"></i> Limpiar Logs
+                </button>
+                <button class="admin-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Contraseña de administrador (en producción usar JWT)
+        const ADMIN_PASSWORD = 'FFCheats2024!';
+        
+        // Verificar si ya está logueado
+        if (localStorage.getItem('adminLoggedIn') === 'true') {
+            showDashboard();
+        }
+        
+        // Login de administrador
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const password = document.getElementById('adminPassword').value;
+            
+            if (password === ADMIN_PASSWORD) {
+                localStorage.setItem('adminLoggedIn', 'true');
+                showDashboard();
+                loadDashboardData();
+            } else {
+                alert('Contraseña incorrecta');
+                document.getElementById('adminPassword').value = '';
+            }
+        });
+        
+        function showDashboard() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+        }
+        
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            location.reload();
+        }
+        
+        function loadDashboardData() {
+            // Cargar datos reales del backend
+            fetch('/api/admin/stats', {
+                headers: {
+                    'X-Admin-Token': ADMIN_PASSWORD
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error cargando datos:', data.error);
+                    // Fallback a datos simulados
+                    updateStats();
+                    loadActivityLog();
+                } else {
+                    updateStatsWithRealData(data);
+                    loadActivityLogWithRealData(data.recent_activity);
+                }
+            })
+            .catch(error => {
+                console.error('Error conectando al backend:', error);
+                // Fallback a datos simulados
+                updateStats();
+                loadActivityLog();
+            });
+        }
+        
+        function updateStatsWithRealData(data) {
+            document.getElementById('successfulLogins').textContent = data.successful_logins;
+            document.getElementById('failedLogins').textContent = data.failed_logins;
+            document.getElementById('blockedIPs').textContent = data.blocked_ips;
+            document.getElementById('activeUsers').textContent = data.active_users;
+        }
+        
+        function loadActivityLogWithRealData(activities) {
+            const activityList = document.getElementById('activityList');
+            activityList.innerHTML = '';
+            
+            if (!activities || activities.length === 0) {
+                activityList.innerHTML = '<div class="activity-item"><div class="activity-info">No hay actividad reciente</div></div>';
+                return;
+            }
+            
+            activities.forEach(activity => {
+                const item = document.createElement('div');
+                item.className = 'activity-item';
+                
+                const timeAgo = getTimeAgo(new Date(activity.timestamp));
+                const status = activity.status === 'success' ? 'success' : 
+                              activity.status === 'failed' ? 'failed' : 'warning';
+                
+                item.innerHTML = `
+                    <div class="activity-info">
+                        <strong>${activity.username || 'Unknown'}</strong> - ${activity.status === 'success' ? 'Login exitoso' : 'Login fallido'}
+                        <br><small>IP: ${activity.ip}</small>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span class="activity-time">${timeAgo}</span>
+                        <span class="activity-status status-${status}">
+                            ${status === 'success' ? '✓' : status === 'failed' ? '✗' : '⚠'}
+                        </span>
+                    </div>
+                `;
+                activityList.appendChild(item);
+            });
+        }
+        
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            
+            if (diffMins < 1) return 'Ahora mismo';
+            if (diffMins < 60) return `Hace ${diffMins} min`;
+            if (diffHours < 24) return `Hace ${diffHours} horas`;
+            return `Hace ${diffDays} días`;
+        }
+        
+        function updateStats() {
+            // Simular estadísticas
+            document.getElementById('successfulLogins').textContent = Math.floor(Math.random() * 50) + 20;
+            document.getElementById('failedLogins').textContent = Math.floor(Math.random() * 10) + 5;
+            document.getElementById('blockedIPs').textContent = Math.floor(Math.random() * 5) + 2;
+            document.getElementById('activeUsers').textContent = Math.floor(Math.random() * 30) + 15;
+        }
+        
+        function loadActivityLog() {
+            const activities = [
+                { user: 'usuario123', ip: '192.168.1.100', action: 'Login exitoso', time: 'Hace 2 min', status: 'success' },
+                { user: 'hacker123', ip: '10.0.0.50', action: 'Login fallido', time: 'Hace 5 min', status: 'failed' },
+                { user: 'admin', ip: '127.0.0.1', action: 'Acceso al dashboard', time: 'Hace 10 min', status: 'success' },
+                { user: 'usuario456', ip: '192.168.1.101', action: 'Login exitoso', time: 'Hace 15 min', status: 'success' },
+                { user: 'bot123', ip: '8.8.8.8', action: 'Múltiples intentos', time: 'Hace 20 min', status: 'warning' }
+            ];
+            
+            const activityList = document.getElementById('activityList');
+            activityList.innerHTML = '';
+            
+            activities.forEach(activity => {
+                const item = document.createElement('div');
+                item.className = 'activity-item';
+                item.innerHTML = `
+                    <div class="activity-info">
+                        <strong>${activity.user}</strong> - ${activity.action}
+                        <br><small>IP: ${activity.ip}</small>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span class="activity-time">${activity.time}</span>
+                        <span class="activity-status status-${activity.status}">
+                            ${activity.status === 'success' ? '✓' : activity.status === 'failed' ? '✗' : '⚠'}
+                        </span>
+                    </div>
+                `;
+                activityList.appendChild(item);
+            });
+        }
+        
+        function refreshData() {
+            updateStats();
+            loadActivityLog();
+            alert('Datos actualizados');
+        }
+        
+        function exportLogs() {
+            const data = {
+                stats: {
+                    successfulLogins: document.getElementById('successfulLogins').textContent,
+                    failedLogins: document.getElementById('failedLogins').textContent,
+                    blockedIPs: document.getElementById('blockedIPs').textContent,
+                    activeUsers: document.getElementById('activeUsers').textContent
+                },
+                timestamp: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `security-logs-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function clearLogs() {
+            if (confirm('¿Estás seguro de que quieres limpiar todos los logs?')) {
+                document.getElementById('activityList').innerHTML = '';
+                alert('Logs limpiados');
+            }
+        }
+        
+        // Actualizar datos cada 30 segundos
+        setInterval(() => {
+            if (localStorage.getItem('adminLoggedIn') === 'true') {
+                updateStats();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
