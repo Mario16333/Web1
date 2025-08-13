@@ -44,7 +44,8 @@ async function handleLogin(event) {
         'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
       },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ username, password }),
+      credentials: 'include'  // Importante para cookies
     });
     
     console.log('📡 Respuesta del servidor:', res.status);
@@ -54,11 +55,10 @@ async function handleLogin(event) {
     if (res.ok && loginResult.ok) {
       console.log('✅ Login exitoso!');
       
-      // Guardar sesión en localStorage
+      // Guardar sesión en localStorage (sin token, solo estado)
       localStorage.setItem('userLoggedIn', 'true');
       localStorage.setItem('username', username);
       localStorage.setItem('loginTime', new Date().toISOString());
-      localStorage.setItem('sessionToken', loginResult.token || '');
       
       showStatus('¡Login exitoso! Redirigiendo...', 'success');
       setTimeout(() => { 

@@ -1,4 +1,8 @@
-const BACKEND_URL = 'https://ffcheats-backend.onrender.com';
+// Detectar si estamos en producción (Netlify) o desarrollo (localhost)
+const isProduction = window.location.hostname.includes('netlify.app');
+const BACKEND_URL = isProduction 
+  ? 'https://ffcheats-backend.onrender.com'
+  : 'http://localhost:5000';
 
 const fmtBytes=(bytes)=>{ if(!bytes) return ''; const units=['B','KB','MB','GB']; let i=0; let b=Number(bytes); while(b>=1024 && i<units.length-1){ b/=1024; i++; } return b.toFixed(b<10?1:0)+' '+units[i]; };
 
@@ -41,8 +45,7 @@ async function bootstrap(){
     const me = await fetch(`${BACKEND_URL}/api/me`, { 
       credentials:'include',
       headers: {
-        'X-Requested-With':'XMLHttpRequest',
-        'Authorization': `Bearer ${localStorage.getItem('sessionToken') || ''}`
+        'X-Requested-With':'XMLHttpRequest'
       }
     });
     
@@ -98,8 +101,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
           method:'POST', 
           credentials:'include', 
           headers:{
-            'X-Requested-With':'XMLHttpRequest',
-            'Authorization': `Bearer ${localStorage.getItem('sessionToken') || ''}`
+            'X-Requested-With':'XMLHttpRequest'
           }
         }); 
       }catch(err){
