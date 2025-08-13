@@ -160,6 +160,44 @@ async function bootstrap(){
   }
 }
 
+// Función para descargar archivos desde el servidor Render
+async function downloadFile(filename) {
+  try {
+    console.log('📥 Iniciando descarga de:', filename);
+    
+    // Obtener token de sesión
+    const sessionToken = localStorage.getItem('sessionToken');
+    if (!sessionToken) {
+      console.error('❌ No hay token de sesión');
+      alert('Error: No hay sesión activa');
+      return;
+    }
+    
+    // Crear URL de descarga
+    const downloadUrl = `${BACKEND_URL}/download/${filename}`;
+    console.log('📥 URL de descarga:', downloadUrl);
+    
+    // Crear un enlace temporal para la descarga
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = filename;
+    
+    // Agregar headers de autorización
+    link.setAttribute('data-auth', `Bearer ${sessionToken}`);
+    
+    // Simular clic en el enlace
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    console.log('✅ Descarga iniciada para:', filename);
+    
+  } catch (error) {
+    console.error('❌ Error descargando archivo:', error);
+    alert('Error al descargar el archivo. Inténtalo de nuevo.');
+  }
+}
+
 document.addEventListener('DOMContentLoaded', ()=>{
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn){
