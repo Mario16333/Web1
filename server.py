@@ -665,7 +665,7 @@ def update_file_metadata():
 
 @app.route('/api/admin/github/update', methods=['POST'])
 def update_file_on_github():
-    """Endpoint para actualizar archivos en GitHub"""
+    """Endpoint para actualizar archivos en GitHub usando la API"""
     admin_token = request.headers.get('X-Admin-Token')
     if admin_token != 'Mario123':
         return jsonify({'error': 'Unauthorized'}), 401
@@ -682,25 +682,71 @@ def update_file_on_github():
         if not os.path.exists(file_path):
             return jsonify({'error': 'File not found'}), 404
         
-        # En Render, no podemos ejecutar Git directamente
-        # En su lugar, vamos a simular el proceso y dar instrucciones
-        logger.info(f"GitHub update requested for {filename}")
+        # Leer el archivo y convertirlo a base64
+        with open(file_path, 'rb') as f:
+            file_content = f.read()
+            import base64
+            file_content_b64 = base64.b64encode(file_content).decode('utf-8')
         
-        # Verificar que el archivo existe y tiene el tamaño correcto
-        stat_info = os.stat(file_path)
-        file_size = stat_info.st_size
+        # Configuración de GitHub
+        github_token = os.getenv('GITHUB_TOKEN')  # Necesitas crear un token en GitHub
+        repo_owner = 'Mario16333'  # Tu usuario de GitHub
+        repo_name = 'Web1'  # Tu repositorio
+        branch = 'main'
         
-        # Simular éxito (en producción esto se haría con webhooks o GitHub Actions)
-        logger.info(f"File {filename} ({file_size} bytes) ready for GitHub update")
+        if not github_token:
+            return jsonify({
+                'success': False,
+                'error': 'GitHub token no configurado',
+                'note': 'Configura la variable de entorno GITHUB_TOKEN en Render'
+            }), 500
         
-        return jsonify({
-            'success': True,
-            'message': f'Archivo {filename} listo para actualización en GitHub',
-            'note': 'Para completar la actualización, haz commit manual en tu repositorio local',
-            'filename': filename,
-            'size': file_size,
-            'timestamp': datetime.now().isoformat()
-        })
+        # Obtener el SHA del archivo actual (si existe)
+        headers = {
+            'Authorization': f'token {github_token}',
+            'Accept': 'application/vnd.github.v3+json'
+        }
+        
+        # Verificar si el archivo existe en GitHub
+        check_url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/contents/downloads/{filename}'
+        check_response = requests.get(check_url, headers=headers)
+        
+        sha = None
+        if check_response.status_code == 200:
+            sha = check_response.json().get('sha')
+        
+        # Preparar datos para la API de GitHub
+        api_data = {
+            'message': commit_message,
+            'content': file_content_b64,
+            'branch': branch
+        }
+        
+        if sha:
+            api_data['sha'] = sha
+        
+        # Subir archivo a GitHub
+        upload_url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/contents/downloads/{filename}'
+        upload_response = requests.put(upload_url, headers=headers, json=api_data)
+        
+        if upload_response.status_code in [200, 201]:
+            result = upload_response.json()
+            logger.info(f"File {filename} uploaded to GitHub successfully")
+            return jsonify({
+                'success': True,
+                'message': f'Archivo {filename} subido a GitHub exitosamente',
+                'commit_sha': result.get('commit', {}).get('sha'),
+                'filename': filename,
+                'size': len(file_content),
+                'timestamp': datetime.now().isoformat()
+            })
+        else:
+            error_msg = upload_response.json().get('message', 'Error desconocido')
+            logger.error(f"GitHub API error: {error_msg}")
+            return jsonify({
+                'success': False,
+                'error': f'Error al subir a GitHub: {error_msg}'
+            }), 500
             
     except Exception as e:
         logger.error(f"Error updating file on GitHub: {e}")
