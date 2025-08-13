@@ -1,12 +1,15 @@
-Este es un archivo de prueba para verificar el sistema de upload del dashboard.
+Test Upload File v1.0
+This is a test file to verify the dashboard upload functionality.
+Date: 2024-01-15
+Time: Test upload
 
-Fecha de creación: 13/08/2025
-Propósito: Testear la funcionalidad de upload de archivos
+This file should be successfully uploaded through the admin dashboard.
+If you can see this file in the dashboard after upload, the system is working correctly!
 
-Si puedes ver este archivo en el dashboard, significa que:
-✅ El upload funciona correctamente
-✅ Los archivos se guardan en el servidor
-✅ La lista se actualiza automáticamente
-✅ El sistema está funcionando perfectamente
+Features being tested:
+- File upload functionality
+- File listing
+- File metadata preservation
+- Real-time updates
 
-¡Dashboard de FFCheats funcionando al 100%! 🚀
+Status: READY FOR TESTING
