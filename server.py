@@ -325,8 +325,10 @@ def get_file_info(filename):
         file_size = stat_info.st_size
         mod_time = datetime.fromtimestamp(stat_info.st_mtime)
         
-        # Formatear fecha
-        formatted_date = mod_time.strftime('%d/%m/%Y, %H:%M:%S')
+        # Formatear fecha con zona horaria local
+        # Convertir a zona horaria local (UTC-5 para Colombia)
+        local_time = mod_time.replace(tzinfo=timezone.utc).astimezone(timezone(timedelta(hours=-5)))
+        formatted_date = local_time.strftime('%d/%m/%Y, %H:%M:%S')
         
         # Formatear tamaño
         if file_size < 1024:
