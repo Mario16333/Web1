@@ -12,6 +12,7 @@ from flask import send_file
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_talisman import Talisman
+from flask_cors import CORS
 from dotenv import load_dotenv
 
 # Cargar variables de entorno
@@ -34,6 +35,14 @@ logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s in %
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+
+# Configurar CORS para permitir peticiones desde Netlify
+CORS(app, origins=[
+    'http://localhost:5000',
+    'http://localhost:3000', 
+    'https://*.netlify.app',
+    'https://joyful-gumdrop-2b0692.netlify.app'
+], supports_credentials=True)
 
 # Rate limiting con almacenamiento opcional Redis
 redis_url = os.getenv("REDIS_URL")
