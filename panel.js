@@ -51,10 +51,61 @@ async function bootstrap(){
     const userNameEl = document.getElementById('userName'); 
     if (userNameEl) userNameEl.textContent = username;
     
-    // Simular tiempo infinito para desarrollo
-    renderTimer(999999999); // Tiempo muy alto para simular infinito
+    // Intentar obtener información real del backend
+    try {
+      console.log('Intentando obtener datos del backend...');
+      const me = await fetch(`${BACKEND_URL}/api/me`, { 
+        credentials:'include',
+        headers: {
+          'X-Requested-With':'XMLHttpRequest'
+        }
+      });
+      
+      if(me.ok) {
+        const data = await me.json();
+        const user = data.user || {};
+        
+        // Actualizar nombre de usuario si viene del backend
+        if (user.username && userNameEl) {
+          userNameEl.textContent = user.username;
+        }
+        
+        // Calcular tiempo restante real
+        let timeLeft = 0; 
+        let expiry = null;
+        if (Array.isArray(user.subscriptions)) {
+          for (const sub of user.subscriptions){
+            if (!timeLeft && typeof sub.timeleft === 'number') timeLeft = sub.timeleft;
+            if (!expiry && sub.expiry) expiry = sub.expiry;
+          }
+        }
+        if (!timeLeft && expiry){
+          if (typeof expiry === 'string' && /^\d+$/.test(expiry)) { 
+            timeLeft = Math.max(0, parseInt(expiry)*1000 - Date.now()); 
+            timeLeft = Math.floor(timeLeft/1000); 
+          }
+          else { 
+            const d=new Date(expiry); 
+            if(!isNaN(d)) { 
+              timeLeft = Math.max(0, Math.floor((d.getTime()-Date.now())/1000)); 
+            } 
+          }
+        }
+        
+        console.log('Tiempo restante real:', timeLeft);
+        renderTimer(timeLeft);
+        
+      } else {
+        console.log('No se pudo obtener datos del backend, usando valores por defecto');
+        renderTimer(999999999); // Tiempo muy alto para simular infinito
+      }
+      
+    } catch (err) {
+      console.log('Error obteniendo datos del backend:', err);
+      renderTimer(999999999); // Tiempo muy alto para simular infinito
+    }
     
-    // Intentar cargar información de archivos (opcional)
+    // Intentar cargar información de archivos
     try {
       headInfo(`${BACKEND_URL}/downloads/Loader.exe`,'exeInfo');
       headInfo(`${BACKEND_URL}/downloads/Requerimientos.zip`,'zipInfo');
