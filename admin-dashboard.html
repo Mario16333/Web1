@@ -638,6 +638,14 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Estadísticas Originales (ocultas pero necesarias para el código) -->
+        <div style="display: none;">
+            <div id="successfulLogins">0</div>
+            <div id="failedLogins">0</div>
+            <div id="blockedIPs">0</div>
+            <div id="activeUsers">0</div>
+        </div>
 
         <!-- Gráficos y Análisis -->
         <div class="charts-section">
@@ -865,16 +873,26 @@
         
         function updateStatsWithRealData(data) {
             // Actualizar estadísticas principales
-            document.getElementById('loginsToday').textContent = data.logins_today || 0;
-            document.getElementById('activeCountries').textContent = data.active_countries || 0;
-            document.getElementById('totalDownloads').textContent = data.total_downloads || 0;
-            document.getElementById('avgSessionTime').textContent = data.avg_session_time || '0m';
+            const loginsTodayEl = document.getElementById('loginsToday');
+            const activeCountriesEl = document.getElementById('activeCountries');
+            const totalDownloadsEl = document.getElementById('totalDownloads');
+            const avgSessionTimeEl = document.getElementById('avgSessionTime');
             
-            // También actualizar las estadísticas originales
-            document.getElementById('successfulLogins').textContent = data.successful_logins || 0;
-            document.getElementById('failedLogins').textContent = data.failed_logins || 0;
-            document.getElementById('blockedIPs').textContent = data.blocked_ips || 0;
-            document.getElementById('activeUsers').textContent = data.active_users || 0;
+            if (loginsTodayEl) loginsTodayEl.textContent = data.logins_today || 0;
+            if (activeCountriesEl) activeCountriesEl.textContent = data.active_countries || 0;
+            if (totalDownloadsEl) totalDownloadsEl.textContent = data.total_downloads || 0;
+            if (avgSessionTimeEl) avgSessionTimeEl.textContent = data.avg_session_time || '0m';
+            
+            // También actualizar las estadísticas originales (si existen)
+            const successfulLoginsEl = document.getElementById('successfulLogins');
+            const failedLoginsEl = document.getElementById('failedLogins');
+            const blockedIPsEl = document.getElementById('blockedIPs');
+            const activeUsersEl = document.getElementById('activeUsers');
+            
+            if (successfulLoginsEl) successfulLoginsEl.textContent = data.successful_logins || 0;
+            if (failedLoginsEl) failedLoginsEl.textContent = data.failed_logins || 0;
+            if (blockedIPsEl) blockedIPsEl.textContent = data.blocked_ips || 0;
+            if (activeUsersEl) activeUsersEl.textContent = data.active_users || 0;
         }
         
         function loadActivityLogWithRealData(activities) {
@@ -925,10 +943,15 @@
         
         function updateStats() {
             // Simular estadísticas
-            document.getElementById('successfulLogins').textContent = Math.floor(Math.random() * 50) + 20;
-            document.getElementById('failedLogins').textContent = Math.floor(Math.random() * 10) + 5;
-            document.getElementById('blockedIPs').textContent = Math.floor(Math.random() * 5) + 2;
-            document.getElementById('activeUsers').textContent = Math.floor(Math.random() * 30) + 15;
+            const successfulLoginsEl = document.getElementById('successfulLogins');
+            const failedLoginsEl = document.getElementById('failedLogins');
+            const blockedIPsEl = document.getElementById('blockedIPs');
+            const activeUsersEl = document.getElementById('activeUsers');
+            
+            if (successfulLoginsEl) successfulLoginsEl.textContent = Math.floor(Math.random() * 50) + 20;
+            if (failedLoginsEl) failedLoginsEl.textContent = Math.floor(Math.random() * 10) + 5;
+            if (blockedIPsEl) blockedIPsEl.textContent = Math.floor(Math.random() * 5) + 2;
+            if (activeUsersEl) activeUsersEl.textContent = Math.floor(Math.random() * 30) + 15;
         }
         
         function loadActivityLog() {

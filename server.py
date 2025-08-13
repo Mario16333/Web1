@@ -41,8 +41,9 @@ CORS(app, origins=[
     'http://localhost:5000',
     'http://localhost:3000', 
     'https://*.netlify.app',
-    'https://joyful-gumdrop-2b0692.netlify.app'
-], supports_credentials=True)
+    'https://joyful-gumdrop-2b0692.netlify.app',
+    'https://*.onrender.com'
+], supports_credentials=True, methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 
 # Rate limiting con almacenamiento opcional Redis
 redis_url = os.getenv("REDIS_URL")
