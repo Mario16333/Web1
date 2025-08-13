@@ -663,6 +663,77 @@ def update_file_metadata():
     with open(metadata_file, 'w', encoding='utf-8') as f:
         json.dump(metadata, f, indent=2, ensure_ascii=False)
 
+@app.route('/api/admin/github/update', methods=['POST'])
+def update_file_on_github():
+    """Endpoint para actualizar archivos en GitHub"""
+    admin_token = request.headers.get('X-Admin-Token')
+    if admin_token != 'Mario123':
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        data = request.get_json()
+        filename = data.get('filename')
+        commit_message = data.get('message', f'Update: {filename}')
+        
+        if not filename:
+            return jsonify({'error': 'Filename is required'}), 400
+        
+        file_path = os.path.join(DOWNLOAD_DIR, filename)
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'File not found'}), 404
+        
+        # Ejecutar comandos Git
+        import subprocess
+        import sys
+        
+        try:
+            # Agregar archivo al staging
+            result = subprocess.run(['git', 'add', f'downloads/{filename}'], 
+                                  capture_output=True, text=True, cwd=os.getcwd())
+            if result.returncode != 0:
+                logger.error(f"Git add error: {result.stderr}")
+                return jsonify({'error': 'Error adding file to Git'}), 500
+            
+            # Hacer commit
+            result = subprocess.run(['git', 'commit', '-m', commit_message], 
+                                  capture_output=True, text=True, cwd=os.getcwd())
+            if result.returncode != 0:
+                logger.error(f"Git commit error: {result.stderr}")
+                return jsonify({'error': 'Error creating commit'}), 500
+            
+            # Hacer push
+            result = subprocess.run(['git', 'push', 'origin', 'main'], 
+                                  capture_output=True, text=True, cwd=os.getcwd())
+            if result.returncode != 0:
+                # Si hay conflicto, hacer pull primero
+                logger.info("Push failed, trying pull first...")
+                result = subprocess.run(['git', 'pull', 'origin', 'main'], 
+                                      capture_output=True, text=True, cwd=os.getcwd())
+                if result.returncode != 0:
+                    logger.error(f"Git pull error: {result.stderr}")
+                    return jsonify({'error': 'Error pulling from GitHub'}), 500
+                
+                # Reintentar push
+                result = subprocess.run(['git', 'push', 'origin', 'main'], 
+                                      capture_output=True, text=True, cwd=os.getcwd())
+                if result.returncode != 0:
+                    logger.error(f"Git push error after pull: {result.stderr}")
+                    return jsonify({'error': 'Error pushing to GitHub'}), 500
+            
+            logger.info(f"File {filename} updated on GitHub successfully")
+            return jsonify({
+                'success': True,
+                'message': f'File {filename} updated on GitHub successfully'
+            })
+            
+        except subprocess.SubprocessError as e:
+            logger.error(f"Subprocess error: {e}")
+            return jsonify({'error': 'Error executing Git commands'}), 500
+            
+    except Exception as e:
+        logger.error(f"Error updating file on GitHub: {e}")
+        return jsonify({'error': 'Error updating file on GitHub'}), 500
+
 @app.get('/<path:asset>')
 def assets(asset):
     # Bloquear acceso directo a la carpeta de descargas (excepto a través del endpoint /download/)
