@@ -26,13 +26,7 @@ OWNER_ID = os.getenv("KEYAUTH_OWNERID", "fTZ9CKbZoq")
 SECRET = os.getenv("KEYAUTH_SECRET", "cf7782a1cf26f900721a8e6f6c128702f01637dede1d7164e150b2185b10f7e7")
 VERSION = os.getenv("KEYAUTH_VERSION", "1.0")
 JWT_SECRET = os.getenv("JWT_SECRET", os.urandom(32))
-# Usar directorio persistente en Render o local para desarrollo
-if os.getenv("RENDER"):
-    # En Render, usar directorio persistente
-    DOWNLOAD_DIR = "/opt/render/project/src/persistent_downloads"
-else:
-    # En desarrollo local
-    DOWNLOAD_DIR = os.path.join(os.getcwd(), "downloads")
+DOWNLOAD_DIR = os.getenv("DOWNLOAD_DIR", os.path.join(os.getcwd(), "downloads"))
 
 COOKIE_NAME = "session"
 ENVIRONMENT = os.getenv("ENV", "development")
