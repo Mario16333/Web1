@@ -516,32 +516,59 @@ def upload_file():
         return jsonify({'error': 'Unauthorized'}), 401
     
     try:
+        logger.info("Upload request received")
+        
         if 'file' not in request.files:
+            logger.error("No file in request.files")
             return jsonify({'error': 'No file provided'}), 400
         
         file = request.files['file']
         if file.filename == '':
+            logger.error("Empty filename")
             return jsonify({'error': 'No file selected'}), 400
+        
+        logger.info(f"Processing file: {file.filename}")
         
         # Validar extensión
         allowed_extensions = {'.exe', '.zip', '.rar', '.7z', '.txt', '.pdf'}
         file_ext = os.path.splitext(file.filename)[1].lower()
         if file_ext not in allowed_extensions:
+            logger.error(f"Invalid file extension: {file_ext}")
             return jsonify({'error': 'File type not allowed'}), 400
+        
+        # Verificar que el directorio existe
+        if not os.path.exists(DOWNLOAD_DIR):
+            logger.info(f"Creating directory: {DOWNLOAD_DIR}")
+            os.makedirs(DOWNLOAD_DIR)
         
         # Guardar archivo
         filename = file.filename
         file_path = os.path.join(DOWNLOAD_DIR, filename)
+        logger.info(f"Saving file to: {file_path}")
         file.save(file_path)
         
-        # Actualizar metadatos
-        update_file_metadata()
+        # Verificar que el archivo se guardó
+        if not os.path.exists(file_path):
+            logger.error(f"File was not saved: {file_path}")
+            return jsonify({'error': 'File save failed'}), 500
         
-        logger.info(f"File uploaded: {filename}")
+        logger.info(f"File saved successfully: {filename}")
+        
+        # Actualizar metadatos (con manejo de errores)
+        try:
+            update_file_metadata()
+            logger.info("Metadata updated successfully")
+        except Exception as metadata_error:
+            logger.error(f"Error updating metadata: {metadata_error}")
+            # No fallar el upload por error en metadatos
+        
+        logger.info(f"File uploaded successfully: {filename}")
         return jsonify({'message': f'File {filename} uploaded successfully'})
         
     except Exception as e:
         logger.error(f"Error uploading file: {e}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
         return jsonify({'error': 'Error uploading file'}), 500
 
 @app.route('/api/admin/files/<filename>', methods=['DELETE'])
