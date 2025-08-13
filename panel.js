@@ -4,17 +4,30 @@ const BACKEND_URL = isProduction
   ? 'https://ffcheats-backend.onrender.com'
   : 'http://localhost:5000';
 
+console.log('🔧 Panel cargado - Backend URL:', BACKEND_URL);
+
 const fmtBytes=(bytes)=>{ if(!bytes) return ''; const units=['B','KB','MB','GB']; let i=0; let b=Number(bytes); while(b>=1024 && i<units.length-1){ b/=1024; i++; } return b.toFixed(b<10?1:0)+' '+units[i]; };
 
 async function headInfo(url, elId){
   try{
+    console.log('📁 Intentando obtener info de archivo:', url);
     const res = await fetch(url, { method:'HEAD', credentials:'include', headers:{ 'X-Requested-With':'XMLHttpRequest' } });
-    if(!res.ok){ document.getElementById(elId).textContent='No disponible'; return; }
+    console.log('📁 Respuesta archivo:', res.status, res.statusText);
+    if(!res.ok){ 
+      document.getElementById(elId).textContent='No disponible'; 
+      console.log('📁 Archivo no disponible:', res.status);
+      return; 
+    }
     const size = res.headers.get('content-length');
     const lm = res.headers.get('last-modified');
     const date = lm ? new Date(lm).toLocaleString('es-ES') : '';
-    document.getElementById(elId).textContent = (fmtBytes(size) || '') + (date ? (' · actualizado ' + date) : '');
-  }catch{ document.getElementById(elId).textContent='No disponible'; }
+    const info = (fmtBytes(size) || '') + (date ? (' · actualizado ' + date) : '');
+    document.getElementById(elId).textContent = info;
+    console.log('📁 Info archivo obtenida:', info);
+  }catch(err){
+    console.error('📁 Error obteniendo archivo:', err);
+    document.getElementById(elId).textContent='No disponible';
+  }
 }
 
 function renderTimer(seconds){
@@ -40,12 +53,12 @@ async function bootstrap(){
     const username = localStorage.getItem('username');
     
     if (!isLoggedIn || !username) {
-      console.log('No hay sesión local, redirigiendo al login');
+      console.log('❌ No hay sesión local, redirigiendo al login');
       window.location.href = '/login-simple.html';
       return;
     }
 
-    console.log('Sesión local encontrada, cargando panel...');
+    console.log('✅ Sesión local encontrada, cargando panel...');
     
     // Mostrar información del usuario desde localStorage
     const userNameEl = document.getElementById('userName'); 
@@ -53,7 +66,7 @@ async function bootstrap(){
     
     // Intentar obtener información real del backend
     try {
-      console.log('Intentando obtener datos del backend...');
+      console.log('🔐 Intentando obtener datos del backend...');
       const me = await fetch(`${BACKEND_URL}/api/me`, { 
         credentials:'include',
         headers: {
@@ -61,8 +74,11 @@ async function bootstrap(){
         }
       });
       
+      console.log('📡 Respuesta del backend:', me.status, me.statusText);
+      
       if(me.ok) {
         const data = await me.json();
+        console.log('📊 Datos del backend:', data);
         const user = data.user || {};
         
         // Actualizar nombre de usuario si viene del backend
@@ -74,6 +90,7 @@ async function bootstrap(){
         let timeLeft = 0; 
         let expiry = null;
         if (Array.isArray(user.subscriptions)) {
+          console.log('📅 Suscripciones:', user.subscriptions);
           for (const sub of user.subscriptions){
             if (!timeLeft && typeof sub.timeleft === 'number') timeLeft = sub.timeleft;
             if (!expiry && sub.expiry) expiry = sub.expiry;
@@ -92,29 +109,27 @@ async function bootstrap(){
           }
         }
         
-        console.log('Tiempo restante real:', timeLeft);
+        console.log('⏰ Tiempo restante real:', timeLeft);
         renderTimer(timeLeft);
         
       } else {
-        console.log('No se pudo obtener datos del backend, usando valores por defecto');
+        console.log('❌ No se pudo obtener datos del backend, usando valores por defecto');
+        console.log('📡 Status:', me.status, me.statusText);
         renderTimer(999999999); // Tiempo muy alto para simular infinito
       }
       
     } catch (err) {
-      console.log('Error obteniendo datos del backend:', err);
+      console.error('💥 Error obteniendo datos del backend:', err);
       renderTimer(999999999); // Tiempo muy alto para simular infinito
     }
     
     // Intentar cargar información de archivos
-    try {
-      headInfo(`${BACKEND_URL}/downloads/Loader.exe`,'exeInfo');
-      headInfo(`${BACKEND_URL}/downloads/Requerimientos.zip`,'zipInfo');
-    } catch (err) {
-      console.log('No se pudieron cargar los archivos:', err);
-    }
+    console.log('📁 Cargando información de archivos...');
+    headInfo(`${BACKEND_URL}/downloads/Loader.exe`,'exeInfo');
+    headInfo(`${BACKEND_URL}/downloads/Requerimientos.zip`,'zipInfo');
     
   } catch(err){
-    console.error('Error cargando datos:', err);
+    console.error('💥 Error cargando datos:', err);
     localStorage.removeItem('userLoggedIn');
     localStorage.removeItem('username');
     localStorage.removeItem('loginTime');
