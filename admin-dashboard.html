@@ -1003,23 +1003,23 @@
             .then(response => response.json())
             .then(data => {
                 const exportData = {
-                    stats: {
-                        successfulLogins: document.getElementById('successfulLogins').textContent,
-                        failedLogins: document.getElementById('failedLogins').textContent,
-                        blockedIPs: document.getElementById('blockedIPs').textContent,
-                        activeUsers: document.getElementById('activeUsers').textContent
-                    },
+                stats: {
+                    successfulLogins: document.getElementById('successfulLogins').textContent,
+                    failedLogins: document.getElementById('failedLogins').textContent,
+                    blockedIPs: document.getElementById('blockedIPs').textContent,
+                    activeUsers: document.getElementById('activeUsers').textContent
+                },
                     logs: data.logs || [],
-                    timestamp: new Date().toISOString()
-                };
-                
+                timestamp: new Date().toISOString()
+            };
+            
                 const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `security-logs-${new Date().toISOString().split('T')[0]}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `security-logs-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
                 showNotification('📥 Logs exportados', 'success');
             })
             .catch(error => {
@@ -1042,7 +1042,7 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('activityList').innerHTML = '';
+                document.getElementById('activityList').innerHTML = '';
                     showNotification('🗑️ Logs limpiados', 'success');
                     // Actualizar estadísticas
                     loadDashboardData();
