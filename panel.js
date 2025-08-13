@@ -177,20 +177,41 @@ async function downloadFile(filename) {
     const downloadUrl = `${BACKEND_URL}/download/${filename}`;
     console.log('📥 URL de descarga:', downloadUrl);
     
-    // Crear un enlace temporal para la descarga
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = filename;
+    // Usar fetch para descargar con autorización
+    const response = await fetch(downloadUrl, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Authorization': `Bearer ${sessionToken}`
+      }
+    });
     
-    // Agregar headers de autorización
-    link.setAttribute('data-auth', `Bearer ${sessionToken}`);
+    if (!response.ok) {
+      console.error('❌ Error en la descarga:', response.status, response.statusText);
+      alert('Error al descargar el archivo. Verifica tu sesión.');
+      return;
+    }
+    
+    // Obtener el blob del archivo
+    const blob = await response.blob();
+    console.log('📥 Archivo descargado, tamaño:', blob.size);
+    
+    // Crear URL del blob y descargar
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
     
     // Simular clic en el enlace
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    console.log('✅ Descarga iniciada para:', filename);
+    // Limpiar la URL del blob
+    window.URL.revokeObjectURL(url);
+    
+    console.log('✅ Descarga completada para:', filename);
     
   } catch (error) {
     console.error('❌ Error descargando archivo:', error);
