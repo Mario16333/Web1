@@ -45,26 +45,48 @@
             padding: 1.5rem;
             border-radius: 1rem;
             border: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
         }
         
-        .stat-title {
-            color: #e2e8f0;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 0.5rem;
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: #3b82f6;
         }
         
-        .stat-value {
-            color: #3b82f6;
+        .stat-icon {
             font-size: 2rem;
-            font-weight: 900;
-            margin-bottom: 0.5rem;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 50%;
+            color: white;
+        }
+        
+        .stat-content h3 {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .stat-number {
+            color: #e2e8f0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
         }
         
         .stat-change {
             color: #10b981;
-            font-size: 0.9rem;
+            font-size: 0.75rem;
+            font-weight: 500;
         }
         
         .stat-change.negative {
@@ -157,6 +179,238 @@
         
         .admin-btn.danger:hover {
             box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+        }
+        
+        /* Gráficos y Análisis */
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .chart-container {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #334155;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+        }
+        
+        .chart-container h3 {
+            color: #e2e8f0;
+            margin-bottom: 1rem;
+        }
+        
+        .geo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .geo-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 0.5rem;
+        }
+        
+        .country {
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+        
+        .percentage {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        
+        /* Alertas */
+        .alerts-section {
+            margin: 2rem 0;
+        }
+        
+        .alerts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .alert-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .alert-item.warning {
+            border-left-color: #f59e0b;
+        }
+        
+        .alert-item.info {
+            border-left-color: #3b82f6;
+        }
+        
+        .alert-item.danger {
+            border-left-color: #ef4444;
+        }
+        
+        .alert-text {
+            color: #e2e8f0;
+            flex: 1;
+        }
+        
+        .alert-time {
+            color: #94a3b8;
+            font-size: 0.75rem;
+        }
+        
+        /* Gestión de Archivos */
+        .files-section {
+            margin: 2rem 0;
+        }
+        
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+        
+        .file-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+        }
+        
+        .file-icon {
+            font-size: 2rem;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 0.5rem;
+        }
+        
+        .file-info h4 {
+            color: #e2e8f0;
+            margin: 0 0 0.25rem 0;
+        }
+        
+        .file-info p {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            margin: 0 0 0.75rem 0;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-small {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            background: #3b82f6;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-small:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn-small.danger {
+            background: #ef4444;
+        }
+        
+        .btn-small.danger:hover {
+            background: #dc2626;
+        }
+        
+        /* Configuración */
+        .config-section {
+            margin: 2rem 0;
+        }
+        
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+        }
+        
+        .config-item label {
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+        
+        /* Switch Toggle */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #334155;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #3b82f6;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
         }
         
         .hidden {
@@ -311,30 +565,145 @@
             <div class="admin-subtitle">Monitoreo en tiempo real - FFCheats</div>
         </div>
 
-        <!-- Estadísticas -->
+        <!-- Estadísticas Avanzadas -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-title">Logins Exitosos</div>
-                <div class="stat-value" id="successfulLogins">0</div>
-                <div class="stat-change">+12% vs ayer</div>
+                <div class="stat-icon">📈</div>
+                <div class="stat-content">
+                    <h3>Logins Hoy</h3>
+                    <div class="stat-number" id="loginsToday">0</div>
+                    <div class="stat-change positive">+12% vs ayer</div>
+                </div>
             </div>
             
             <div class="stat-card">
-                <div class="stat-title">Intentos Fallidos</div>
-                <div class="stat-value" id="failedLogins">0</div>
-                <div class="stat-change negative">+5% vs ayer</div>
+                <div class="stat-icon">🌍</div>
+                <div class="stat-content">
+                    <h3>Países Activos</h3>
+                    <div class="stat-number" id="activeCountries">0</div>
+                    <div class="stat-change">Últimas 24h</div>
+                </div>
             </div>
             
             <div class="stat-card">
-                <div class="stat-title">IPs Bloqueadas</div>
-                <div class="stat-value" id="blockedIPs">0</div>
-                <div class="stat-change">+2 nuevas</div>
+                <div class="stat-icon">💾</div>
+                <div class="stat-content">
+                    <h3>Descargas Totales</h3>
+                    <div class="stat-number" id="totalDownloads">0</div>
+                    <div class="stat-change positive">+5% esta semana</div>
+                </div>
             </div>
             
             <div class="stat-card">
-                <div class="stat-title">Usuarios Activos</div>
-                <div class="stat-value" id="activeUsers">0</div>
-                <div class="stat-change">+8% vs ayer</div>
+                <div class="stat-icon">⏰</div>
+                <div class="stat-content">
+                    <h3>Tiempo Promedio</h3>
+                    <div class="stat-number" id="avgSessionTime">0m</div>
+                    <div class="stat-change">Por sesión</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráficos y Análisis -->
+        <div class="charts-section">
+            <div class="chart-container">
+                <h3>📊 Actividad de Usuarios (Últimos 7 días)</h3>
+                <canvas id="userActivityChart" width="400" height="200"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <h3>🌍 Distribución Geográfica</h3>
+                <div id="geoDistribution" class="geo-list">
+                    <div class="geo-item">
+                        <span class="country">🇨🇴 Colombia</span>
+                        <span class="percentage">45%</span>
+                    </div>
+                    <div class="geo-item">
+                        <span class="country">🇲🇽 México</span>
+                        <span class="percentage">23%</span>
+                    </div>
+                    <div class="geo-item">
+                        <span class="country">🇪🇸 España</span>
+                        <span class="percentage">18%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas y Notificaciones -->
+        <div class="alerts-section">
+            <h3>🚨 Alertas del Sistema</h3>
+            <div id="systemAlerts" class="alerts-list">
+                <div class="alert-item warning">
+                    <span class="alert-icon">⚠️</span>
+                    <span class="alert-text">5 intentos de login fallidos desde la misma IP</span>
+                    <span class="alert-time">Hace 2 min</span>
+                </div>
+                <div class="alert-item info">
+                    <span class="alert-icon">ℹ️</span>
+                    <span class="alert-text">Nuevo usuario registrado: usuario123</span>
+                    <span class="alert-time">Hace 15 min</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gestión de Archivos -->
+        <div class="files-section">
+            <h3>📁 Gestión de Archivos</h3>
+            <div class="files-grid">
+                <div class="file-card">
+                    <div class="file-icon">📄</div>
+                    <div class="file-info">
+                        <h4>Loader.exe</h4>
+                        <p>4.6 MB • Descargado 127 veces</p>
+                        <div class="file-actions">
+                            <button class="btn-small" onclick="updateFile('Loader.exe')">Actualizar</button>
+                            <button class="btn-small danger" onclick="deleteFile('Loader.exe')">Eliminar</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="file-card">
+                    <div class="file-icon">📦</div>
+                    <div class="file-info">
+                        <h4>Requerimientos.zip</h4>
+                        <p>8.8 MB • Descargado 89 veces</p>
+                        <div class="file-actions">
+                            <button class="btn-small" onclick="updateFile('Requerimientos.zip')">Actualizar</button>
+                            <button class="btn-small danger" onclick="deleteFile('Requerimientos.zip')">Eliminar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuración del Sistema -->
+        <div class="config-section">
+            <h3>⚙️ Configuración del Sistema</h3>
+            <div class="config-grid">
+                <div class="config-item">
+                    <label>🔒 Modo Mantenimiento</label>
+                    <label class="switch">
+                        <input type="checkbox" id="maintenanceMode">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <div class="config-item">
+                    <label>📧 Notificaciones por Email</label>
+                    <label class="switch">
+                        <input type="checkbox" id="emailNotifications" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <div class="config-item">
+                    <label>🛡️ Bloqueo de IPs</label>
+                    <label class="switch">
+                        <input type="checkbox" id="ipBlocking" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
             </div>
         </div>
 
@@ -643,6 +1012,59 @@
                 }, 300);
             }, 3000);
         }
+        
+        // Funciones para gestión de archivos
+        function updateFile(filename) {
+            if (confirm(`¿Quieres actualizar el archivo ${filename}?`)) {
+                showNotification(`🔄 Actualizando ${filename}...`, 'info');
+                // Aquí iría la lógica para actualizar el archivo
+                setTimeout(() => {
+                    showNotification(`✅ ${filename} actualizado exitosamente`, 'success');
+                }, 2000);
+            }
+        }
+        
+        function deleteFile(filename) {
+            if (confirm(`¿Estás seguro de que quieres eliminar ${filename}? Esta acción no se puede deshacer.`)) {
+                showNotification(`🗑️ Eliminando ${filename}...`, 'warning');
+                // Aquí iría la lógica para eliminar el archivo
+                setTimeout(() => {
+                    showNotification(`✅ ${filename} eliminado exitosamente`, 'success');
+                }, 2000);
+            }
+        }
+        
+        // Funciones para configuración
+        function toggleMaintenanceMode() {
+            const isEnabled = document.getElementById('maintenanceMode').checked;
+            showNotification(
+                isEnabled ? '🔒 Modo mantenimiento activado' : '🔓 Modo mantenimiento desactivado', 
+                'info'
+            );
+        }
+        
+        function toggleEmailNotifications() {
+            const isEnabled = document.getElementById('emailNotifications').checked;
+            showNotification(
+                isEnabled ? '📧 Notificaciones por email activadas' : '📧 Notificaciones por email desactivadas', 
+                'info'
+            );
+        }
+        
+        function toggleIpBlocking() {
+            const isEnabled = document.getElementById('ipBlocking').checked;
+            showNotification(
+                isEnabled ? '🛡️ Bloqueo de IPs activado' : '🛡️ Bloqueo de IPs desactivado', 
+                'info'
+            );
+        }
+        
+        // Inicializar eventos de configuración
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('maintenanceMode').addEventListener('change', toggleMaintenanceMode);
+            document.getElementById('emailNotifications').addEventListener('change', toggleEmailNotifications);
+            document.getElementById('ipBlocking').addEventListener('change', toggleIpBlocking);
+        });
         
         // Actualizar datos cada 30 segundos
         setInterval(() => {
