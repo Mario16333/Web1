@@ -54,25 +54,17 @@ async function handleLogin(event) {
 
     if (res.ok && loginResult.ok) {
       console.log('✅ Login exitoso!');
+      console.log('📊 Respuesta completa:', loginResult);
       
-      // Extraer token JWT de las cookies
-      const cookies = document.cookie.split(';');
-      let sessionToken = '';
-      for (let cookie of cookies) {
-        const [name, value] = cookie.trim().split('=');
-        if (name === 'session') {
-          sessionToken = value;
-          break;
-        }
-      }
-      
-      console.log('🔑 Token extraído:', sessionToken ? 'Presente' : 'Ausente');
+      // Obtener token de la respuesta JSON
+      const sessionToken = loginResult.token;
+      console.log('🔑 Token de la respuesta:', sessionToken ? 'Presente' : 'Ausente');
       
       // Guardar sesión en localStorage (incluyendo token)
       localStorage.setItem('userLoggedIn', 'true');
       localStorage.setItem('username', username);
       localStorage.setItem('loginTime', new Date().toISOString());
-      localStorage.setItem('sessionToken', sessionToken);
+      localStorage.setItem('sessionToken', sessionToken || '');
       
       showStatus('¡Login exitoso! Redirigiendo...', 'success');
       setTimeout(() => { 
