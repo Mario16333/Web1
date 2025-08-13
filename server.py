@@ -345,28 +345,11 @@ def get_file_info(filename):
         stat_info = os.stat(file_path)
         file_size = stat_info.st_size
         
-        # Intentar obtener fecha original de metadatos
-        metadata_file = os.path.join(os.getcwd(), 'file_metadata.json')
-        original_date = None
-        
-        if os.path.exists(metadata_file):
-            try:
-                import json
-                with open(metadata_file, 'r', encoding='utf-8') as f:
-                    metadata = json.load(f)
-                    if actual_name in metadata:
-                        original_date = metadata[actual_name].get('original_modified_formatted')
-            except Exception as e:
-                logger.warning(f"Error reading metadata: {e}")
-        
-        # Si no hay fecha original, usar la del archivo
-        if not original_date:
-            mod_time = datetime.fromtimestamp(stat_info.st_mtime)
-            utc_time = mod_time.replace(tzinfo=timezone.utc)
-            local_time = utc_time.astimezone(timezone(timedelta(hours=-5)))
-            formatted_date = local_time.strftime('%d/%m/%Y, %H:%M:%S')
-        else:
-            formatted_date = original_date
+        # Siempre usar la fecha actual del archivo (no depender de metadatos)
+        mod_time = datetime.fromtimestamp(stat_info.st_mtime)
+        utc_time = mod_time.replace(tzinfo=timezone.utc)
+        local_time = utc_time.astimezone(timezone(timedelta(hours=-5)))
+        formatted_date = local_time.strftime('%d/%m/%Y, %H:%M:%S')
         
         # Formatear tamaño
         if file_size < 1024:
