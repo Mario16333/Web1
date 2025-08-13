@@ -183,6 +183,103 @@
             outline: none;
             border-color: #3b82f6;
         }
+        
+        /* Sistema de notificaciones */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .notification.warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        /* Mejoras en las tarjetas de estadísticas */
+        .stat-card {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid #334155;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Mejoras en la actividad reciente */
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #334155;
+            transition: background 0.3s ease;
+        }
+        
+        .activity-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        
+        .status-failed {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .status-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
     </style>
 </head>
 <body>
@@ -323,16 +420,25 @@
         }
         
         function loadDashboardData() {
+            // Determinar URL del backend
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const BACKEND_URL = isLocal ? 'http://localhost:5000' : 'https://ffcheats-backend.onrender.com';
+            
             // Cargar datos reales del backend
-            fetch('/api/admin/stats', {
+            fetch(`${BACKEND_URL}/api/admin/stats`, {
                 headers: {
-                    'X-Admin-Token': ADMIN_PASSWORD
+                    'X-Admin-Token': ADMIN_PASSWORD,
+                    'Content-Type': 'application/json'
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('📡 Respuesta del backend:', response.status);
+                return response.json();
+            })
             .then(data => {
+                console.log('📊 Datos recibidos:', data);
                 if (data.error) {
-                    console.error('Error cargando datos:', data.error);
+                    console.error('❌ Error cargando datos:', data.error);
                     // Fallback a datos simulados
                     updateStats();
                     loadActivityLog();
@@ -342,7 +448,7 @@
                 }
             })
             .catch(error => {
-                console.error('Error conectando al backend:', error);
+                console.error('💥 Error conectando al backend:', error);
                 // Fallback a datos simulados
                 updateStats();
                 loadActivityLog();
@@ -442,42 +548,106 @@
         }
         
         function refreshData() {
-            updateStats();
-            loadActivityLog();
-            alert('Datos actualizados');
+            loadDashboardData();
+            showNotification('🔄 Datos actualizados', 'success');
         }
         
         function exportLogs() {
-            const data = {
-                stats: {
-                    successfulLogins: document.getElementById('successfulLogins').textContent,
-                    failedLogins: document.getElementById('failedLogins').textContent,
-                    blockedIPs: document.getElementById('blockedIPs').textContent,
-                    activeUsers: document.getElementById('activeUsers').textContent
-                },
-                timestamp: new Date().toISOString()
-            };
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const BACKEND_URL = isLocal ? 'http://localhost:5000' : 'https://ffcheats-backend.onrender.com';
             
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `security-logs-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
+            fetch(`${BACKEND_URL}/api/admin/logs`, {
+                headers: {
+                    'X-Admin-Token': ADMIN_PASSWORD,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const exportData = {
+                    stats: {
+                        successfulLogins: document.getElementById('successfulLogins').textContent,
+                        failedLogins: document.getElementById('failedLogins').textContent,
+                        blockedIPs: document.getElementById('blockedIPs').textContent,
+                        activeUsers: document.getElementById('activeUsers').textContent
+                    },
+                    logs: data.logs || [],
+                    timestamp: new Date().toISOString()
+                };
+                
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `security-logs-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showNotification('📥 Logs exportados', 'success');
+            })
+            .catch(error => {
+                console.error('Error exportando logs:', error);
+                showNotification('❌ Error exportando logs', 'error');
+            });
         }
         
         function clearLogs() {
             if (confirm('¿Estás seguro de que quieres limpiar todos los logs?')) {
-                document.getElementById('activityList').innerHTML = '';
-                alert('Logs limpiados');
+                const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const BACKEND_URL = isLocal ? 'http://localhost:5000' : 'https://ffcheats-backend.onrender.com';
+                
+                fetch(`${BACKEND_URL}/api/admin/logs`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-Admin-Token': ADMIN_PASSWORD,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('activityList').innerHTML = '';
+                    showNotification('🗑️ Logs limpiados', 'success');
+                    // Actualizar estadísticas
+                    loadDashboardData();
+                })
+                .catch(error => {
+                    console.error('Error limpiando logs:', error);
+                    showNotification('❌ Error limpiando logs', 'error');
+                });
             }
+        }
+        
+        // Función para mostrar notificaciones
+        function showNotification(message, type = 'success') {
+            // Remover notificación existente
+            const existingNotification = document.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            // Crear nueva notificación
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // Mostrar notificación
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Ocultar después de 3 segundos
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
         }
         
         // Actualizar datos cada 30 segundos
         setInterval(() => {
             if (localStorage.getItem('adminLoggedIn') === 'true') {
-                updateStats();
+                loadDashboardData();
             }
         }, 30000);
     </script>

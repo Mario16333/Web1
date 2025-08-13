@@ -141,6 +141,15 @@ def api_login():
             'status': 'pending'
         }
         security_logs.append(login_log)
+        
+        # También registrar en activity_logs para el dashboard
+        activity_logs.append({
+            'username': username,
+            'ip': client_ip,
+            'status': 'pending',
+            'timestamp': datetime.now(),
+            'action': 'Intento de login'
+        })
 
         # init
         init_res = keyauth_request('init', **{'user': username, 'pass': password})
@@ -157,6 +166,12 @@ def api_login():
             if security_logs:
                 security_logs[-1]['status'] = 'failed'
                 security_logs[-1]['error'] = login_res.get('message', 'login failed')
+            
+            # Actualizar activity_logs
+            if activity_logs:
+                activity_logs[-1]['status'] = 'failed'
+                activity_logs[-1]['action'] = f'Login fallido: {login_res.get("message", "login failed")}'
+            
             return jsonify({'ok': False, 'error': login_res.get('message', 'login failed')}), 401
 
         subscriptions = login_res.get('info', {}).get('subscriptions', [])
@@ -168,6 +183,11 @@ def api_login():
             'roles': subscriptions,
             'exp': exp
         }, JWT_SECRET, algorithm='HS256')
+        
+        # Actualizar activity_logs con éxito
+        if activity_logs:
+            activity_logs[-1]['status'] = 'success'
+            activity_logs[-1]['action'] = 'Login exitoso'
         
         resp = make_response({
             'ok': True, 
@@ -283,6 +303,9 @@ security_logs = []
 blocked_ips = set()
 login_attempts = {}
 
+# Logs de actividad para el dashboard
+activity_logs = []
+
 @app.get('/admin')
 def admin_access():
     return send_from_directory('.', 'admin.html')
@@ -295,24 +318,47 @@ def admin_dashboard():
         abort(403)
     return send_from_directory('.', 'admin-dashboard.html')
 
-@app.get('/api/admin/stats')
+@app.route('/api/admin/stats', methods=['GET'])
 def admin_stats():
+    """Endpoint para estadísticas del dashboard de admin"""
     # Verificar token de admin
     admin_token = request.headers.get('X-Admin-Token')
     if admin_token != 'Mario123':
         return jsonify({'error': 'Unauthorized'}), 401
     
-    # Calcular estadísticas
-    successful_logins = len([log for log in security_logs if log.get('status') == 'success'])
-    failed_logins = len([log for log in security_logs if log.get('status') == 'failed'])
+    # Calcular estadísticas reales
+    successful_logins = len([log for log in activity_logs if log.get('status') == 'success'])
+    failed_logins = len([log for log in activity_logs if log.get('status') == 'failed'])
+    blocked_ips = len(set([log.get('ip') for log in activity_logs if log.get('status') == 'blocked']))
+    active_users = len(set([log.get('username') for log in activity_logs if log.get('status') == 'success' and (datetime.now() - log.get('timestamp', datetime.now())).seconds < 3600]))
     
     return jsonify({
         'successful_logins': successful_logins,
         'failed_logins': failed_logins,
-        'blocked_ips': len(blocked_ips),
-        'active_users': len(set(log.get('username') for log in security_logs[-50:] if log.get('status') == 'success')),
-        'recent_activity': security_logs[-20:]  # Últimos 20 logs
+        'blocked_ips': blocked_ips,
+        'active_users': active_users,
+        'recent_activity': activity_logs[-10:]  # Últimos 10 logs
     })
+
+@app.route('/api/admin/logs', methods=['GET'])
+def admin_logs():
+    """Endpoint para obtener todos los logs"""
+    admin_token = request.headers.get('X-Admin-Token')
+    if admin_token != 'Mario123':
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    return jsonify({'logs': activity_logs})
+
+@app.route('/api/admin/logs', methods=['DELETE'])
+def clear_admin_logs():
+    """Endpoint para limpiar logs"""
+    admin_token = request.headers.get('X-Admin-Token')
+    if admin_token != 'Mario123':
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    global activity_logs
+    activity_logs.clear()
+    return jsonify({'message': 'Logs cleared successfully'})
 
 @app.get('/<path:asset>')
 def assets(asset):
