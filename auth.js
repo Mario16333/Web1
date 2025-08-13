@@ -1,5 +1,12 @@
 console.log('🔍 Login script cargado');
-console.log('🔧 Backend listo para login');
+
+// Detectar si estamos en producción (Netlify) o desarrollo (localhost)
+const isProduction = window.location.hostname.includes('netlify.app');
+const BACKEND_URL = isProduction 
+  ? 'https://ffcheats-backend.onrender.com'  // Cambia esto por tu URL real de Render
+  : 'http://localhost:5000';
+
+console.log(`🔧 Conectando a backend: ${BACKEND_URL}`);
 
 function showStatus(message, type = 'info') {
   const statusDiv = document.getElementById('statusMessage');
@@ -27,11 +34,11 @@ async function handleLogin(event) {
 
   submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando...';
   submitBtn.disabled = true;
-  showStatus('Conectando...', 'info');
+  showStatus('Conectando al servidor...', 'info');
 
   try {
     console.log('🔐 Intentando login vía backend...');
-    const res = await fetch('/api/login', {
+    const res = await fetch(`${BACKEND_URL}/api/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -39,19 +46,31 @@ async function handleLogin(event) {
       },
       body: JSON.stringify({ username, password })
     });
+    
+    console.log('📡 Respuesta del servidor:', res.status);
+    
     const loginResult = await res.json().catch(() => ({ ok:false, error:'Formato de respuesta inválido' }));
 
     if (res.ok && loginResult.ok) {
       console.log('✅ Login exitoso!');
+      
+      // Guardar sesión en localStorage
+      localStorage.setItem('userLoggedIn', 'true');
+      localStorage.setItem('username', username);
+      localStorage.setItem('loginTime', new Date().toISOString());
+      localStorage.setItem('sessionToken', loginResult.token || '');
+      
       showStatus('¡Login exitoso! Redirigiendo...', 'success');
-      setTimeout(() => { window.location.href = '/panel.html'; }, 600);
+      setTimeout(() => { 
+        window.location.href = '/panel.html'; 
+      }, 600);
     } else {
       console.log('❌ Login fallido:', loginResult?.error);
       showStatus('Error: ' + (loginResult?.error || 'Login failed'), 'error');
     }
   } catch (err) {
-    console.error('💥 Error:', err);
-    showStatus('Error: ' + err.message, 'error');
+    console.error('💥 Error de conexión:', err);
+    showStatus('Error de conexión al servidor. Verifica tu conexión a internet.', 'error');
   } finally {
     submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Iniciar Sesión';
     submitBtn.disabled = false;
