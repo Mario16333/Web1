@@ -284,7 +284,23 @@ def protected_download(filename):
         abort(404)
 
     logger.info("descarga usuario=%s archivo=%s", payload.get('sub'), actual_name)
-    return send_from_directory(DOWNLOAD_DIR, actual_name, as_attachment=True)
+    
+    # Obtener información del archivo para headers
+    stat_info = os.stat(file_path)
+    file_size = stat_info.st_size
+    mod_time = datetime.fromtimestamp(stat_info.st_mtime)
+    
+    # Crear respuesta con headers para evitar cache
+    response = send_from_directory(DOWNLOAD_DIR, actual_name, as_attachment=True)
+    
+    # Headers para evitar cache y mostrar información correcta
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    response.headers['Content-Length'] = str(file_size)
+    response.headers['Last-Modified'] = mod_time.strftime('%a, %d %b %Y %H:%M:%S GMT')
+    
+    return response
 
 @app.get('/api/file-info/<path:filename>')
 @limiter.limit("60/hour")
@@ -491,9 +507,12 @@ def get_files_info():
                 else:
                     size_str = f"{file_size / (1024 * 1024):.1f} MB"
                 
-                # Obtener fecha de modificación
+                # Obtener fecha de modificación (siempre actual)
                 mod_time = datetime.fromtimestamp(stat_info.st_mtime)
-                formatted_date = mod_time.strftime('%d/%m/%Y, %H:%M:%S')
+                # Convertir a hora local (UTC-5 para Colombia)
+                utc_time = mod_time.replace(tzinfo=timezone.utc)
+                local_time = utc_time.astimezone(timezone(timedelta(hours=-5)))
+                formatted_date = local_time.strftime('%d/%m/%Y, %H:%M:%S')
                 
                 files_info.append({
                     'filename': filename,
@@ -561,6 +580,36 @@ def upload_file():
         except Exception as metadata_error:
             logger.error(f"Error updating metadata: {metadata_error}")
             # No fallar el upload por error en metadatos
+        
+        # Forzar actualización de metadatos del archivo específico
+        try:
+            metadata_file = os.path.join(os.getcwd(), 'file_metadata.json')
+            if os.path.exists(metadata_file):
+                with open(metadata_file, 'r', encoding='utf-8') as f:
+                    metadata = json.load(f)
+            else:
+                metadata = {}
+            
+            # Actualizar metadatos del archivo subido
+            stat_info = os.stat(file_path)
+            mod_time = datetime.fromtimestamp(stat_info.st_mtime)
+            utc_time = mod_time.replace(tzinfo=timezone.utc)
+            local_time = utc_time.astimezone(timezone(timedelta(hours=-5)))
+            formatted_date = local_time.strftime('%d/%m/%Y, %H:%M:%S')
+            
+            metadata[filename] = {
+                "original_modified": local_time.isoformat(),
+                "original_modified_formatted": formatted_date,
+                "last_upload": datetime.now().isoformat(),
+                "size": stat_info.st_size
+            }
+            
+            with open(metadata_file, 'w', encoding='utf-8') as f:
+                json.dump(metadata, f, indent=2, ensure_ascii=False)
+            
+            logger.info(f"File metadata updated for {filename}")
+        except Exception as e:
+            logger.error(f"Error updating file metadata: {e}")
         
         logger.info(f"File uploaded successfully: {filename}")
         return jsonify({'message': f'File {filename} uploaded successfully'})
