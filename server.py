@@ -316,9 +316,9 @@ def admin_stats():
 
 @app.get('/<path:asset>')
 def assets(asset):
-    # Bloquear acceso directo a la carpeta de descargas
+    # Bloquear acceso directo a la carpeta de descargas (excepto a través del endpoint /download/)
     norm = os.path.normpath('/' + asset).lstrip('/')
-    if norm.lower().startswith('downloads'):
+    if norm.lower().startswith('downloads') and not asset.lower().startswith('download/'):
         abort(404)
     if os.path.isfile(asset):
         # Forzar MIME correcto para JS/CSS en Windows
