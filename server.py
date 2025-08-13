@@ -325,9 +325,11 @@ def get_file_info(filename):
         file_size = stat_info.st_size
         mod_time = datetime.fromtimestamp(stat_info.st_mtime)
         
-        # Formatear fecha - usar la hora local del archivo sin conversión
-        # El timestamp del archivo ya está en hora local del sistema donde se creó
-        formatted_date = mod_time.strftime('%d/%m/%Y, %H:%M:%S')
+        # Formatear fecha - convertir de UTC a hora local (UTC-5 para Colombia)
+        # El timestamp del archivo está en UTC en el servidor de Render
+        utc_time = mod_time.replace(tzinfo=timezone.utc)
+        local_time = utc_time.astimezone(timezone(timedelta(hours=-5)))  # UTC-5 para Colombia
+        formatted_date = local_time.strftime('%d/%m/%Y, %H:%M:%S')
         
         # Formatear tamaño
         if file_size < 1024:
