@@ -8,23 +8,25 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/3523/3523887.png">
 </head>
 <body>
     <!-- Header -->
-    <header class="header" id="header">
+    <header class="header">
         <nav class="navbar">
             <div class="nav-brand">
                 <i class="fas fa-bolt"></i>
                 <span>FFCheats</span>
             </div>
-            <ul class="nav-menu" id="navMenu">
+            <ul class="nav-menu">
                 <li><a href="#inicio" class="nav-link">Inicio</a></li>
                 <li><a href="#productos" class="nav-link">Suscripciones</a></li>
+                <li><a href="#caracteristicas" class="nav-link">Características</a></li>
+                <li><a href="#contacto" class="nav-link">Contacto</a></li>
             </ul>
             <div class="nav-actions">
-                <a href="login-simple.html" class="btn btn-secondary" style="margin-right: 1rem;">Login</a>
+                <a href="login-simple.html" class="btn btn-secondary">Login</a>
                 <div class="nav-cart" id="navCart">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-count">0</span>
@@ -39,16 +41,107 @@
     </header>
 
     <!-- Hero Section -->
-    <section id="inicio" class="hero" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); min-height: 60vh; display: flex; align-items: center; justify-content: center;">
-        <div style="max-width: 600px; margin: 0 auto; text-align: center; color: #fff;">
-            <div style="font-size: 3.5rem; margin-bottom: 1.2rem; color: #3b82f6;"><i class="fas fa-bolt"></i></div>
-            <h1 style="font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem;">Consigue las mejores <span style="background: linear-gradient(45deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">suscripciones</span> para Free Fire</h1>
-            <p style="font-size: 1.15rem; margin-bottom: 2rem; color: #e2e8f0;">Aimbot, Chams, Fake Lag, ESP Líneas y mucho más. Compra tu acceso premium y domina cada partida.</p>
-            <a href="#productos" class="cta-button primary" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: #fff; font-weight: 800; font-size: 1.1rem; padding: 1rem 2.5rem; border-radius: 2rem; text-decoration: none; box-shadow: 0 8px 25px rgba(59,130,246,0.4); transition: all 0.3s ease; display: inline-block; margin: 0 auto;">Ver Suscripciones</a>
+    <section id="inicio" class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">
+                        Domina Free Fire con las mejores 
+                        <span class="highlight">suscripciones</span>
+                    </h1>
+                    <p class="hero-description">
+                        Accede a herramientas premium como Aimbot, Chams, ESP y más. 
+                        Mejora tu rendimiento y domina cada partida.
+                    </p>
+                    <div class="hero-features">
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>100% Seguro</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-bolt"></i>
+                            <span>Actualización Automática</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-headset"></i>
+                            <span>Soporte 24/7</span>
+                        </div>
+                    </div>
+                    <div class="hero-buttons">
+                        <a href="#productos" class="btn btn-primary">
+                            <i class="fas fa-rocket"></i>
+                            Ver Suscripciones
+                        </a>
+                        <a href="#caracteristicas" class="btn btn-outline">
+                            <i class="fas fa-play"></i>
+                            Ver Demo
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="hero-image">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- Featured Products Section -->
+    <!-- Features Section -->
+    <section id="caracteristicas" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Características Principales</h2>
+                <p>Descubre todo lo que puedes hacer con nuestras herramientas premium</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-crosshairs"></i>
+                    </div>
+                    <h3>Aimbot Inteligente</h3>
+                    <p>Precisión automática con detección avanzada de objetivos y ajustes personalizables.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <h3>ESP Completo</h3>
+                    <p>Visualiza enemigos, objetos y recursos a través de paredes con información detallada.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-running"></i>
+                    </div>
+                    <h3>Speed Hack</h3>
+                    <p>Movimiento acelerado y saltos mejorados para mayor movilidad en el campo de batalla.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Anti-Ban</h3>
+                    <p>Sistema avanzado de protección que mantiene tu cuenta segura en todo momento.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <h3>Auto-Update</h3>
+                    <p>Actualizaciones automáticas para mantener las herramientas siempre al día.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>Soporte Premium</h3>
+                    <p>Atención personalizada 24/7 con respuestas rápidas y soluciones efectivas.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
     <section id="productos" class="products">
         <div class="container">
             <div class="section-header">
@@ -58,8 +151,44 @@
             <div class="product-grid" id="productGrid">
                 <!-- Aquí el JS insertará los productos -->
             </div>
-            
+        </div>
+    </section>
 
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">10K+</div>
+                    <div class="stat-label">Usuarios Activos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Soporte</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Seguro</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>¿Listo para dominar Free Fire?</h2>
+                <p>Únete a miles de jugadores que ya han mejorado su rendimiento</p>
+                <a href="#productos" class="btn btn-primary btn-large">
+                    <i class="fas fa-rocket"></i>
+                    Comenzar Ahora
+                </a>
+            </div>
         </div>
     </section>
 
@@ -115,7 +244,7 @@
                 <button class="pago-tab" data-metodo="banco">Cuenta Bancaria</button>
             </div>
             <div class="pago-content pago-yape active">
-                <img src="https://files.catbox.moe/e8r8mc.png" alt="QR Yape" class="yape-qr-img" style="width:180px; margin: 1rem auto; display:block; border-radius:1rem; box-shadow:0 2px 12px #a5b4fc33;">
+                <img src="https://files.catbox.moe/e8r8mc.png" alt="QR Yape" class="yape-qr-img">
                 <p>Escanea el QR y sube tu comprobante de pago.</p>
                 <form id="pagoForm">
                     <input type="hidden" id="pagoMetodo" name="metodo" value="Yape">
@@ -132,9 +261,9 @@
                         <label for="pagoComprobante">Comprobante de pago (imagen)</label>
                         <input type="file" id="pagoComprobante" name="comprobante" accept="image/*" required>
                     </div>
-                    <button type="submit" class="pay-btn" style="margin-top:1rem;">Enviar comprobante</button>
+                    <button type="submit" class="pay-btn">Enviar comprobante</button>
                 </form>
-                <div id="pagoStatus" style="margin-top:1rem; text-align:center;"></div>
+                <div id="pagoStatus"></div>
             </div>
             <div class="pago-content pago-paypal">
                 <div class="coming-soon-overlay">
@@ -165,6 +294,53 @@
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="footer" id="contacto">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-brand">
+                        <i class="fas fa-bolt"></i>
+                        <span>FFCheats</span>
+                    </div>
+                    <p>La mejor plataforma de herramientas premium para Free Fire.</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-discord"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-telegram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Productos</h4>
+                    <ul>
+                        <li><a href="#productos">Suscripciones</a></li>
+                        <li><a href="#caracteristicas">Características</a></li>
+                        <li><a href="#">Precios</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Soporte</h4>
+                    <ul>
+                        <li><a href="#">Centro de Ayuda</a></li>
+                        <li><a href="#">Contacto</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#">Términos de Servicio</a></li>
+                        <li><a href="#">Política de Privacidad</a></li>
+                        <li><a href="#">Reembolsos</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 FFCheats. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
 
     <script src="script.js"></script>
 </body>
